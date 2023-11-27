@@ -1,0 +1,16 @@
+images/
+.vscode/
+logs.txt
+.env
+
+node_modules/
+
+dist
+
+*.gen.ts
+
+restrictions.json
+manifest.gen.ts
+apis.gen/
+
+.data/

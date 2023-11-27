@@ -1,0 +1,79 @@
+{
+  "$schema": "https://deno.land/x/deno/cli/schemas/config-file.v1.json",
+  "unstable": ["kv"],
+  "lint": {
+    "include": ["src", "tasks"],
+    "exclude": ["dist/", "node_modules/", ".data"]
+  },
+  "fmt": {
+    "indentWidth": 2
+  },
+  "compilerOptions": {
+    "lib": ["dom", "dom.asynciterable", "deno.ns", "deno.unstable"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true
+  },
+  "tasks": {
+    "manifest": "deno run -A ./tasks/dev.ts",
+    "webhook": "deno run -A ./tasks/post_webhook.ts",
+    "dev": "deno task manifest && deno run --watch --allow-env --allow-read --allow-write --allow-net src/main.tsx",
+    "dev:inspect": "deno task manifest && deno run --inspect-wait --watch --allow-env --allow-read --allow-write --allow-net src/main.tsx",
+    "get-deploy-project": "deno run -A ./tasks/print_env.ts DENO_DEPLOY_PROJECT",
+    "get-deploy-token": "deno run -A ./tasks/print_env.ts DENO_DEPLOY_TOKEN",
+    "minify": "deno run -A npm:terser --module --source-map -o ./dist/main.min.js ./dist/main.js",
+    "bundle": "deno task manifest && deno run --allow-env --allow-read --allow-net --allow-run --allow-write=dist/metafile.json ./tasks/bundle.ts",
+    "deploy": "deno task bundle && deno run -A ./tasks/deploy.ts"
+  },
+  "bench": {
+    "files": {
+      "include": ["./bench/mod.ts"]
+    }
+  },
+  "imports": {
+    "$apis": "./apis.gen/mod.ts",
+    "$manifest": "./manifest.gen.ts",
+    "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@^0.1.48",
+    "@b-fuze/deno-dom/wasm-noinit": "jsr:@b-fuze/deno-dom@^0.1.48/wasm-noinit",
+    "@deno/cache-dir": "jsr:@deno/cache-dir@^0.11.1",
+    "@deno/graph": "jsr:@deno/graph@^0.82.1",
+    "@grammyjs/hydrate": "https://deno.land/x/grammy_hydrate@v1.4.1/mod.ts",
+    "@grammyjs/router": "https://deno.land/x/grammy_router@v2.0.0/mod.ts",
+    "@grammyjs/types": "https://deno.land/x/grammy_types@v3.14.0/mod.ts",
+    "@luca/esbuild-deno-loader": "jsr:@luca/esbuild-deno-loader@^0.10.3",
+    "@miyauci/esbuild-import-map": "jsr:@miyauci/esbuild-import-map@^1.2.0",
+    "@octokit/core": "npm:@octokit/core@^6.1.2",
+    "@std/assert": "jsr:@std/assert@^1.0.5",
+    "@std/cli": "jsr:@std/cli@^1.0.6",
+    "@std/crypto": "jsr:@std/crypto@^1.0.3",
+    "@std/dotenv": "jsr:@std/dotenv@^0.225.2",
+    "@std/encoding": "jsr:@std/encoding@^1.0.5",
+    "@std/fmt": "jsr:@std/fmt@^1.0.2",
+    "@std/fmt/colors": "jsr:@std/fmt@^1.0.2/colors",
+    "@std/fs": "jsr:@std/fs@^1.0.3",
+    "@std/http": "jsr:@std/http@^1.0.6",
+    "@std/media-types": "jsr:@std/media-types@^1.0.3",
+    "@std/path": "jsr:@std/path@^1.0.6",
+    "@std/random": "jsr:@std/random@^0.1.0",
+    "@std/streams": "jsr:@std/streams@^1.0.5",
+    "@std/testing": "jsr:@std/testing@^1.0.2",
+    "esbuild": "npm:esbuild@^0.24.0",
+    "grammy": "https://deno.land/x/grammy@v1.30.0/mod.ts",
+    "openapi-typescript": "npm:openapi-typescript@^7.4.0",
+    "openapi-typescript-fetch": "npm:openapi-typescript-fetch@^2.0.0",
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "react/jsx-dev-runtime": "https://esm.sh/react@18.2.0/jsx-dev-runtime",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "typescript": "npm:typescript@^5.6.2",
+    "zod": "npm:zod@^3.23.8"
+  },
+  "deploy": {
+    "exclude": ["**/node_modules"],
+    "include": ["dist/**/*", "public/**/*"],
+    "entrypoint": "dist/main.js"
+  }
+}
