@@ -3,6 +3,7 @@ import { route } from "@std/http";
 import { Bot, webhookCallback } from "grammy";
 import type { AppContextType } from "./main.tsx";
 import { logStart, measureDuration } from "./utils.ts";
+import { DbContext } from "./kv/dbcontext.ts";
 
 export async function serveWebhook(
   bot: Bot<AppContextType>,
@@ -17,11 +18,23 @@ export async function serveWebhook(
     [
       {
         method: "POST",
+        pattern: new URLPattern({ pathname: "/cache/flush" }),
+        handler: async (req) => {
+          const { secret } = await req.json();
+          if (secret !== BOT_SECRET) {
+            return Response.json({ error: "Invalid secret" }, { status: 403 });
+          }
+          await DbContext.use((db) => db.clearCache());
+          return Response.json({ ok: true });
+        },
+      },
+      {
+        method: "POST",
         pattern: new URLPattern({ pathname: "/" }),
         handler: (req) => handleUpdate(req),
       },
     ],
-    () => new Response(null, { status: 404 })
+    () => Response.json({ error: "Not found" }, { status: 404 })
   );
 
   const server = Deno.serve({

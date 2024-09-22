@@ -1,4 +1,3 @@
-import { InlineKeyboard } from "grammy";
 import {
   DOMParser,
   Element,
@@ -6,8 +5,10 @@ import {
   NodeType,
   initParser,
 } from "@b-fuze/deno-dom/wasm-noinit";
-import type { ReactNode } from "react";
+import { InlineKeyboard } from "grammy";
+import { Fragment, type ReactNode } from "react";
 import type { CommandConfig } from "../commands.ts";
+import { DbContext } from "../kv/dbcontext.ts";
 import { AppContextType } from "../main.tsx";
 
 const getParser = (() => {
@@ -27,14 +28,14 @@ async function replyWithWord(ctx: AppContextType, palabra: string | undefined) {
     return;
   }
 
-  const result = await fetchWord(palabra);
+  const result = await fetchWord(ctx.db, palabra);
 
   if (!result) {
     await ctx.reply("No se ha encontrado la palabra");
     return;
   }
 
-  const { word, acepciones, etimologia, url, sugerencias } = result;
+  const { word, acepciones, etimologia, url, sugerencias, more } = result;
 
   if (sugerencias) {
     const inline_keyboard = new InlineKeyboard();
@@ -48,12 +49,16 @@ async function replyWithWord(ctx: AppContextType, palabra: string | undefined) {
       </>,
       {
         reply_to_message_id: ctx.message?.message_id,
-        reply_markup: {
-          inline_keyboard: inline_keyboard.inline_keyboard,
-        },
+        reply_markup: inline_keyboard,
       }
     );
     return;
+  }
+
+  let reply_markup;
+
+  if (more.length) {
+    reply_markup = new InlineKeyboard().text("Ver más", `rae-more ${palabra}`);
   }
 
   const contenido = (
@@ -78,13 +83,94 @@ async function replyWithWord(ctx: AppContextType, palabra: string | undefined) {
     link_preview_options: {
       is_disabled: true,
     },
+    reply_markup,
   });
 }
 
+const PAGE_SIZE = 10;
+
+async function replyMore(
+  ctx: AppContextType,
+  page: number,
+  palabra: string | undefined,
+  messageMode: "create" | "edit"
+) {
+  if (!palabra) {
+    await ctx.reply("Por favor, introduce una palabra");
+    return;
+  }
+
+  const result = await fetchWord(ctx.db, palabra);
+
+  if (!result) {
+    await ctx.reply("No se ha encontrado la palabra");
+    return;
+  }
+
+  const { more } = result;
+
+  const pageCount = Math.ceil((more?.length ?? 0) / PAGE_SIZE);
+  const start = page * PAGE_SIZE;
+  const end = start + PAGE_SIZE;
+  const sliced = more?.slice(start, end);
+
+  const inline_keyboard = new InlineKeyboard();
+
+  if (page > 0) {
+    inline_keyboard.text("⬅️", `rae-more-update ${page - 1} ${palabra}`);
+  }
+
+  if (page < pageCount - 1) {
+    inline_keyboard.text("➡️", `rae-more-update ${page + 1} ${palabra}`);
+  }
+
+  const contenido = (
+    <>
+      {sliced?.map(({ title, acepciones }) => (
+        <>
+          <b>{title}</b>
+          {acepciones.map((acepcion) => (
+            <>
+              {"\n"}
+              {acepcion}
+            </>
+          ))}
+          {"\n\n"}
+        </>
+      ))}
+    </>
+  );
+
+  if (messageMode === "edit") {
+    await ctx.callbackQuery?.message?.editText(ctx.renderReactText(contenido), {
+      parse_mode: "HTML",
+      reply_markup: inline_keyboard,
+      link_preview_options: { is_disabled: true },
+    });
+  } else {
+    await ctx.replyWithReact(contenido, {
+      reply_to_message_id: ctx.message?.message_id,
+      link_preview_options: { is_disabled: true },
+      reply_markup: inline_keyboard,
+    });
+  }
+  await ctx.answerCallbackQuery();
+}
 export const config: CommandConfig = {
   command: "rae",
   description: "Busca una palabra en la RAE",
   setup: (bot) => {
+    bot.callbackQuery(/^rae-more-update (\d+) (.+)$/, async (ctx) => {
+      const page = Number(ctx.match?.[1] ?? 0);
+      const palabra = ctx.match?.[2];
+      await replyMore(ctx, page, palabra, "edit");
+    });
+
+    bot.callbackQuery(/^rae-more (.+)$/, async (ctx) => {
+      const palabra = ctx.match?.[1];
+      await replyMore(ctx, 0, palabra, "create");
+    });
+
     bot.callbackQuery(/^rae (.+)$/, async (ctx) => {
       const palabra = ctx.match?.[1];
       await replyWithWord(ctx, palabra);
@@ -96,10 +182,8 @@ export const config: CommandConfig = {
   },
 };
 
-async function fetchWord(palabra: string) {
-  const url = `https://dle.rae.es/${encodeURI(palabra)}`;
-  const response = await fetch(url);
-  const html = await response.text();
+async function fetchWord(db: DbContext, palabra: string) {
+  const { url, html } = await db.rae.getWordHtml(palabra);
   const parser = await getParser();
   const doc = parser.parseFromString(html, "text/html");
 
@@ -134,12 +218,53 @@ async function fetchWord(palabra: string) {
 
   const acepciones = Array.from(
     resultados?.querySelectorAll("[class^=j]") ?? [],
-    (acepcion) =>
-      reformatNode(acepcion, {
-        expandAbbreviations: false,
-        italicSelectors: ["abbr.c", ".h"],
-        boldSelectors: [".n_acep", ".u"],
-      })
+    (acepcion, index) => {
+      const sinonimos = acepcion.nextElementSibling?.matches(".sin-header")
+        ? acepcion.nextElementSibling
+        : null;
+
+      sinonimos?.querySelectorAll(".d").forEach((x) => {
+        x.append(doc.createTextNode(" "));
+      });
+
+      return (
+        <Fragment key={index}>
+          {reformatNode(acepcion, {
+            expandAbbreviations: false,
+            italicSelectors: ["abbr.c", ".h"],
+            boldSelectors: [".n_acep", ".u"],
+          })}
+          {acepcion.nextElementSibling?.matches(".sin-header") && (
+            <Fragment>
+              {"\n    "}
+              {reformatNode(acepcion.nextElementSibling, {
+                expandAbbreviations: false,
+                boldSelectors: [".d"],
+              })}
+            </Fragment>
+          )}
+        </Fragment>
+      );
+    }
+  );
+
+  const more = Array.from(
+    resultados?.querySelectorAll(".k5,.k6") ?? [],
+    (node) => {
+      const title = reformatNode(node);
+      const acepciones = [];
+      while (node.nextElementSibling && node.nextElementSibling.matches(".m")) {
+        acepciones.push(
+          reformatNode(node.nextElementSibling, {
+            expandAbbreviations: false,
+            italicSelectors: ["abbr.c", ".h"],
+            boldSelectors: [".n_acep", ".u"],
+          })
+        );
+        node = node.nextElementSibling;
+      }
+      return { title, acepciones };
+    }
   );
 
   return {
@@ -147,6 +272,8 @@ async function fetchWord(palabra: string) {
     word,
     etimologia,
     acepciones,
+    more,
+    hasMore: !!more.length,
   };
 }
 
@@ -174,8 +301,13 @@ function reformatNode(
 
   if (!(node instanceof Element)) return null;
 
-  if (["B", "I", "EM", "STRONG"].includes(node.nodeName)) {
-    const TagName = node.nodeName.toLowerCase() as "b" | "i" | "em" | "strong";
+  if (["B", "I", "EM", "STRONG", "U"].includes(node.nodeName)) {
+    const TagName = node.nodeName.toLowerCase() as
+      | "b"
+      | "i"
+      | "em"
+      | "strong"
+      | "u";
 
     return (
       <TagName>
@@ -206,12 +338,14 @@ function reformatNode(
     return Array.from(node.childNodes, (node) => reformatNode(node, ops));
   })();
 
-  return (
-    [isItalic && "i", isBold && "b", isUnderline && "u"] as const
-  ).reduce<ReactNode>((acc, Tag): ReactNode => {
-    if (Tag) {
-      return <Tag>{acc}</Tag>;
-    }
+  const tags = [
+    ["i", isItalic],
+    ["b", isBold],
+    ["u", isUnderline],
+  ] as const;
+
+  return tags.reduce<ReactNode>((acc, [Tag, use]): ReactNode => {
+    if (use) return <Tag>{acc}</Tag>;
     return acc;
   }, result);
 }

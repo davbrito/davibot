@@ -1,10 +1,12 @@
 import { DENO_KV_URL } from "../config.ts";
 import { BotInfoRepository } from "./bot-info.ts";
+import { RaeRepository } from "./rae.ts";
 
 export class DbContext {
   #kv: Deno.Kv | undefined;
 
   readonly botInfo = new BotInfoRepository(this);
+  readonly rae = new RaeRepository(this);
 
   async getKv() {
     this.#kv ??= await Deno.openKv(DENO_KV_URL);
@@ -14,6 +16,20 @@ export class DbContext {
   async get<T>(key: Deno.KvKey) {
     const kv = await this.getKv();
     return await kv.get<T>(key);
+  }
+
+  async set(
+    key: Deno.KvKey,
+    value: unknown,
+    options?: {
+      expireIn?: number;
+    }
+  ) {
+    const kv = await this.getKv();
+    return await kv.set(key, value, options);
+  }
+  async clearCache(): Promise<void> {
+    await this.rae.clearCache();
   }
 
   [Symbol.dispose]() {

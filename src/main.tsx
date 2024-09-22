@@ -1,20 +1,22 @@
 import { type HydrateFlavor, hydrate } from "@grammyjs/hydrate";
+import { sample } from "@std/random";
 import { Bot, Context, session, SessionFlavor } from "grammy";
 import { setupCommands } from "./commands.ts";
 import { BOT_SECRET, BOT_TOKEN, runAsWebhook } from "./config.ts";
+import { DbContext } from "./kv/dbcontext.ts";
 import { ApisFlavor, withApis } from "./middlewares/apis.ts";
 import { react, ReactFlavor } from "./react.tsx";
 import * as sessionUtils from "./sessions.ts";
 import { logStart, measureDuration } from "./utils.ts";
 import { serveWebhook } from "./webhook.ts";
-import { DbContext } from "./kv/dbcontext.ts";
-import { sample } from "@std/random";
+import { DbFlavor, withDb } from "./kv/middleware.ts";
 
 interface BaseAppContextType
   extends Context,
     SessionFlavor<sessionUtils.Session>,
     ReactFlavor,
-    ApisFlavor {}
+    ApisFlavor,
+    DbFlavor {}
 
 export type AppContextType = HydrateFlavor<BaseAppContextType>;
 
@@ -33,6 +35,7 @@ async function main() {
 
   bot.use(
     withApis(),
+    withDb(),
     hydrate(),
     react(),
     session({ initial: sessionUtils.getInitialSessionData })
@@ -92,7 +95,10 @@ async function main() {
   );
 
   bot.catch((error) => {
-    console.error(error);
+    console.error(
+      'Error caught in "bot.catch":',
+      String(error) + "\n" + error.stack
+    );
   });
 
   if (runAsWebhook) {

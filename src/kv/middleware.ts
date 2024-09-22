@@ -6,8 +6,12 @@ export interface DbFlavor {
 }
 
 export function withDb<C extends Context>(): MiddlewareFn<C & DbFlavor> {
-  return (ctx, next) => {
+  return async (ctx, next) => {
     ctx.db = new DbContext();
-    return next();
+    try {
+      return await next();
+    } finally {
+      ctx.db[Symbol.dispose]();
+    }
   };
 }

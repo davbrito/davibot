@@ -15,6 +15,7 @@
       "jsr:@std/bytes@^1.0.2": "jsr:@std/bytes@1.0.2",
       "jsr:@std/cli@^1.0.6": "jsr:@std/cli@1.0.6",
       "jsr:@std/collections@^0.224.2": "jsr:@std/collections@0.224.2",
+      "jsr:@std/collections@^1.0.6": "jsr:@std/collections@1.0.6",
       "jsr:@std/crypto@^1.0.3": "jsr:@std/crypto@1.0.3",
       "jsr:@std/data-structures@^1.0.2": "jsr:@std/data-structures@1.0.4",
       "jsr:@std/dotenv@^0.225.2": "jsr:@std/dotenv@0.225.2",
@@ -117,6 +118,9 @@
       },
       "@std/collections@0.224.2": {
         "integrity": "e77819455294e92d4e7ddad1dbfd46f94174c09318e541e6621fac4a4d0ab326"
+      },
+      "@std/collections@1.0.6": {
+        "integrity": "60ad252af7df0594e6455f697920a37cd523ad66469fefcc9735e362826ac01d"
       },
       "@std/crypto@1.0.3": {
         "integrity": "a2a32f51ddef632d299e3879cd027c630dcd4d1d9a5285d6e6788072f4e51e7f"
@@ -1057,6 +1061,7 @@
       "jsr:@miyauci/esbuild-import-map@^1.2.0",
       "jsr:@std/assert@^1.0.5",
       "jsr:@std/cli@^1.0.6",
+      "jsr:@std/collections@^1.0.6",
       "jsr:@std/crypto@^1.0.3",
       "jsr:@std/dotenv@^0.225.2",
       "jsr:@std/encoding@^1.0.5",
