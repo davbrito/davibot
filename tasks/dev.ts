@@ -6,11 +6,16 @@ import { manifestPath, sourcePath } from "./constants.ts";
 import { formatCode } from "./utils.ts";
 import { z } from "zod";
 
-const dotenv = await load().then(
-  z.object({
-    AUTHOR: z.string(),
-    RESTRICTIONS: z.string().optional(),
-  }).parse
+const dotenv = await load().then((e) =>
+  z
+    .object({
+      AUTHOR: z.string(),
+      RESTRICTIONS: z.string().optional(),
+    })
+    .parse({
+      ...e,
+      ...Deno.env.toObject(),
+    })
 );
 
 async function createConfigsManifest(): Promise<string> {
