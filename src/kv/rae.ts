@@ -72,6 +72,12 @@ export class RaeRepository {
 
   async clearCache() {
     const kv = await this.db.getKv();
-    await kv.delete(["rae-cache"]);
+    const op = kv.atomic();
+
+    for await (const { key } of kv.list({ prefix: ["rae-cache"] })) {
+      op.delete(key);
+    }
+
+    await op.commit();
   }
 }
