@@ -31,7 +31,14 @@ export async function serveWebhook(
       {
         method: "POST",
         pattern: new URLPattern({ pathname: "/" }),
-        handler: (req) => handleUpdate(req),
+        handler: async (req) => {
+          const response = await handleUpdate(req);
+
+          if (response.status !== 200) {
+            console.error("Failed to handle update", response);
+          }
+          return response;
+        },
       },
     ],
     () => Response.json({ error: "Not found" }, { status: 404 }),
