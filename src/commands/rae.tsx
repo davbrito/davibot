@@ -6,11 +6,11 @@ import {
   initParser,
 } from "@b-fuze/deno-dom/wasm-noinit";
 import { InlineKeyboard } from "grammy";
+import { range } from "npm:iteretijs";
 import { Fragment, type ReactNode } from "react";
 import type { CommandConfig } from "../commands.ts";
 import { DbContext } from "../kv/dbcontext.ts";
 import { AppContextType } from "../main.tsx";
-import { iota, range } from "npm:iteretijs";
 
 const getParser = (() => {
   let parser: DOMParser | undefined;
@@ -115,26 +115,11 @@ async function replyMore(
   const end = start + PAGE_SIZE;
   const sliced = more?.slice(start, end);
 
-  const inline_keyboard = new InlineKeyboard();
-
-  if (page > 0) {
-    inline_keyboard.text("⬅️", `rae-more-update ${page - 1} ${palabra}`);
-  }
-
-  const pageSubset = range(
-    Math.max(0, page - 2),
-    Math.min(page + 3, pageCount),
+  const inline_keyboard = createInlineKeyboardPagination(
+    page,
+    palabra,
+    pageCount,
   );
-  for (const i of pageSubset) {
-    inline_keyboard.text(
-      i === page ? `_${i + 1}_` : String(i + 1),
-      `rae-more-update ${i} ${palabra}`,
-    );
-  }
-
-  if (page < pageCount - 1) {
-    inline_keyboard.text("➡️", `rae-more-update ${page + 1} ${palabra}`);
-  }
 
   const contenido = (
     <>
@@ -199,6 +184,36 @@ export const config: CommandConfig = {
     });
   },
 };
+
+function createInlineKeyboardPagination(
+  page: number,
+  palabra: string,
+  pageCount: number,
+) {
+  if (pageCount < 2) return undefined;
+
+  const inline_keyboard = new InlineKeyboard();
+
+  if (page > 0) {
+    inline_keyboard.text("⬅️", `rae-more-update ${page - 1} ${palabra}`);
+  }
+
+  const pageSubset = range(
+    Math.max(0, page - 2),
+    Math.min(page + 3, pageCount),
+  );
+  for (const i of pageSubset) {
+    inline_keyboard.text(
+      i === page ? `_${i + 1}_` : String(i + 1),
+      `rae-more-update ${i} ${palabra}`,
+    );
+  }
+
+  if (page < pageCount - 1) {
+    inline_keyboard.text("➡️", `rae-more-update ${page + 1} ${palabra}`);
+  }
+  return inline_keyboard;
+}
 
 async function fetchWord(db: DbContext, palabra: string) {
   const { url, html } = await db.rae.getWordHtml(palabra);
