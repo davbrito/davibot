@@ -52,8 +52,9 @@ export class SessionManager {
           storage: enhanceStorage({ storage: new KvAdapter() }),
         }),
       )
-      .use((ctx) => {
+      .use((ctx, next) => {
         ctx.sessionManager = new SessionManager(ctx);
+        return next();
       });
   }
 }
