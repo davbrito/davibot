@@ -40,6 +40,7 @@ export class SessionManager {
   }
 
   async use<T>(callback: (session: SessionData) => T | Promise<T>): Promise<T> {
+    this.#ctx.session ??= SessionManager.#getInitialData();
     const session = await this.#ctx.session;
     return await callback(session);
   }
