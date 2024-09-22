@@ -10,6 +10,7 @@ import { Fragment, type ReactNode } from "react";
 import type { CommandConfig } from "../commands.ts";
 import { DbContext } from "../kv/dbcontext.ts";
 import { AppContextType } from "../main.tsx";
+import { iota, range } from "npm:iteretijs";
 
 const getParser = (() => {
   let parser: DOMParser | undefined;
@@ -120,6 +121,17 @@ async function replyMore(
     inline_keyboard.text("⬅️", `rae-more-update ${page - 1} ${palabra}`);
   }
 
+  const pageSubset = range(
+    Math.max(0, page - 2),
+    Math.min(page + 3, pageCount),
+  );
+  for (const i of pageSubset) {
+    inline_keyboard.text(
+      i === page ? `_${i + 1}_` : String(i + 1),
+      `rae-more-update ${i} ${palabra}`,
+    );
+  }
+
   if (page < pageCount - 1) {
     inline_keyboard.text("➡️", `rae-more-update ${page + 1} ${palabra}`);
   }
@@ -138,6 +150,12 @@ async function replyMore(
           {"\n\n"}
         </>
       ))}
+
+      {pageCount > 1 && (
+        <i>
+          {page + 1}/{pageCount}
+        </i>
+      )}
     </>
   );
 
