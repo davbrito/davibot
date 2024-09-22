@@ -14,3 +14,5 @@ manifest.gen.ts
 apis.gen/
 
 .data/
+
+kview/

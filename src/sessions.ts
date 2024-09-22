@@ -1,66 +1,114 @@
+import {
+  Composer,
+  enhanceStorage,
+  lazySession,
+  LazySessionFlavor,
+  StorageAdapter,
+} from "grammy";
 import { z } from "zod";
-import type { Message } from "@grammyjs/types";
+import { HiSession } from "./hi-session.ts";
+import { DbContext } from "./kv/dbcontext.ts";
+import { AppContextType } from "./main.tsx";
 
-const sessionDataSchema = z.object({
-  hiRequestId: z.number().nullable(),
-});
+const sessionDataSchema = z
+  .object({
+    hiRequestId: z.number().nullable(),
+  })
+  .passthrough();
 
-const sessionSchema = sessionDataSchema.transform((data) => new Session(data));
+export type SessionData = z.infer<typeof sessionDataSchema>;
 
-type SessionData = z.infer<typeof sessionDataSchema>;
+export type SessionManagerFlavor = LazySessionFlavor<SessionData> & {
+  sessionManager: SessionManager;
+};
 
-export class Session {
-  #data: SessionData;
+export class SessionManager {
+  #ctx: AppContextType;
+
+  readonly hi = new HiSession(this);
 
   static #getInitialData(): SessionData {
     return { hiRequestId: null };
   }
-  constructor(data?: SessionData) {
-    this.#data = data ?? Session.#getInitialData();
-  }
-  isHiRequestReply(message: Message) {
-    return isHiRequestReply(this.#data, message);
-  }
-  removeHiRequest(message: Message) {
-    removeHiRequest(this.#data, message);
-  }
-  addHiRequest(message: Message) {
-    setHiRequest(this.#data, message);
+  constructor(ctx: AppContextType) {
+    this.#ctx = ctx;
   }
 
-  clean() {
-    this.#data = Session.#getInitialData();
+  async clean(): Promise<void> {
+    const session = await this.#ctx.session;
+    Object.assign(session, SessionManager.#getInitialData());
   }
 
-  toJSON(): SessionData {
-    return this.#data;
+  async use<T>(callback: (session: SessionData) => T | Promise<T>): Promise<T> {
+    const session = await this.#ctx.session;
+    return await callback(session);
   }
 
-  static fromJSON(data: unknown): Session {
-    return sessionSchema.parse(data);
+  static middleware(): Composer<AppContextType> {
+    return new Composer<AppContextType>()
+      .use(
+        lazySession({
+          initial: () => this.#getInitialData(),
+          storage: enhanceStorage({ storage: new KvAdapter() }),
+        }),
+      )
+      .use((ctx) => {
+        ctx.sessionManager = new SessionManager(ctx);
+      });
   }
 }
 
-function isHiRequestReply(data: SessionData, message: Message) {
-  const reply_to_message_id = message.reply_to_message?.message_id;
-  if (!reply_to_message_id) return false;
-  return data.hiRequestId === reply_to_message_id;
-}
-
-function removeHiRequest(data: SessionData, message: Message) {
-  const message_id = message.reply_to_message?.message_id;
-  if (!message_id) return;
-  if (data.hiRequestId === message_id) {
-    data.hiRequestId = null;
+class KvAdapter<T> implements StorageAdapter<T> {
+  async read(key: string): Promise<T | undefined> {
+    return await DbContext.use(async (db) => {
+      const data = await db.get<T>(["session", key]);
+      return data.value ? data.value : undefined;
+    });
   }
-}
+  async write(key: string, value: T): Promise<void> {
+    await DbContext.use(async (db) => {
+      await db.set(["session", key], value);
+    });
+  }
 
-function setHiRequest(data: SessionData, message: Message) {
-  const message_id = message.message_id;
-  if (data.hiRequestId === message_id) return;
-  data.hiRequestId = message_id;
-}
+  async delete(key: string): Promise<void> {
+    await DbContext.use(async (db) => {
+      await db.set(["session", key], undefined);
+    });
+  }
 
-export function getInitialSessionData(): Session {
-  return new Session();
+  async has(key: string): Promise<boolean> {
+    return await DbContext.use(async (db) => {
+      const data = await db.get<T>(["session", key]);
+      return Boolean(data.value);
+    });
+  }
+  async *readAllKeys(): AsyncIterable<string> {
+    using db = new DbContext();
+    const kv = await db.getKv();
+
+    for await (const { key } of kv.list({ prefix: ["session"] })) {
+      yield key[1] as string;
+    }
+  }
+  async *readAllValues(): AsyncIterable<T> {
+    using db = new DbContext();
+    const kv = await db.getKv();
+
+    for await (const { value } of kv.list<T>({
+      prefix: ["session"],
+    })) {
+      yield value;
+    }
+  }
+  async *readAllEntries(): AsyncIterable<[key: string, value: T]> {
+    using db = new DbContext();
+    const kv = await db.getKv();
+
+    for await (const { key, value } of kv.list<T>({
+      prefix: ["session"],
+    })) {
+      yield [key[1] as string, value];
+    }
+  }
 }

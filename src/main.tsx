@@ -1,19 +1,19 @@
 import { type HydrateFlavor, hydrate } from "@grammyjs/hydrate";
 import { sample } from "@std/random";
-import { Bot, Context, session, SessionFlavor } from "grammy";
+import { Bot, Context } from "grammy";
 import { setupCommands } from "./commands.ts";
 import { BOT_SECRET, BOT_TOKEN, runAsWebhook } from "./config.ts";
 import { DbContext } from "./kv/dbcontext.ts";
+import { DbFlavor, withDb } from "./kv/middleware.ts";
 import { ApisFlavor, withApis } from "./middlewares/apis.ts";
 import { react, ReactFlavor } from "./react.tsx";
-import * as sessionUtils from "./sessions.ts";
+import { SessionManager, SessionManagerFlavor } from "./sessions.ts";
 import { logStart, measureDuration } from "./utils.ts";
 import { serveWebhook } from "./webhook.ts";
-import { DbFlavor, withDb } from "./kv/middleware.ts";
 
 interface BaseAppContextType
   extends Context,
-    SessionFlavor<sessionUtils.Session>,
+    SessionManagerFlavor,
     ReactFlavor,
     ApisFlavor,
     DbFlavor {}
@@ -38,7 +38,7 @@ async function main() {
     withDb(),
     hydrate(),
     react(),
-    session({ initial: sessionUtils.getInitialSessionData })
+    SessionManager.middleware(),
   );
 
   await setupCommands(bot);
@@ -91,13 +91,13 @@ async function main() {
   bot.on("edited_message", (ctx) =>
     ctx.reply("Ajá! Uldepasao! Editaste eto!", {
       reply_to_message_id: ctx.editedMessage.message_id,
-    })
+    }),
   );
 
   bot.catch((error) => {
     console.error(
       'Error caught in "bot.catch":',
-      String(error) + "\n" + error.stack
+      String(error) + "\n" + error.stack,
     );
   });
 

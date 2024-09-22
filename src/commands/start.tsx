@@ -9,17 +9,17 @@ export const config: CommandConfig = {
       const msg = await ctx.reply("Hi! Tell me your name! Please", {
         reply_markup: { force_reply: true },
       });
-      ctx.session.addHiRequest(msg);
+      await ctx.sessionManager.hi.setHiRequest(msg);
     });
 
     bot
       .on("message:text")
-      .filter((ctx) => ctx.session.isHiRequestReply(ctx.message))
+      .filter((ctx) => ctx.sessionManager.hi.isHiRequestReply(ctx.message))
       .use(async (ctx) => {
         await ctx.reply(`Hello ${bold(ctx.message.text ?? "")}`, {
           parse_mode: "MarkdownV2",
         });
-        ctx.session.removeHiRequest(ctx.message);
+        await ctx.sessionManager.hi.removeHiRequest(ctx.message);
       });
   },
 };

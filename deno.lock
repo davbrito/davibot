@@ -51,6 +51,7 @@
       "npm:@types/react-dom": "npm:@types/react-dom@18.3.0",
       "npm:esbuild@^0.24.0": "npm:esbuild@0.24.0",
       "npm:grammy@1.19.2": "npm:grammy@1.19.2",
+      "npm:iteretijs": "npm:iteretijs@0.2.3",
       "npm:openapi-fetch@^0.12.0": "npm:openapi-fetch@0.12.2",
       "npm:openapi-typescript": "npm:openapi-typescript@7.4.0_typescript@5.6.2",
       "npm:openapi-typescript-fetch@2.0.0": "npm:openapi-typescript-fetch@2.0.0",
@@ -608,6 +609,10 @@
       },
       "index-to-position@0.1.2": {
         "integrity": "sha512-MWDKS3AS1bGCHLBA2VLImJz42f7bJh8wQsTGCzI3j519/CASStoDONUBVz2I/VID0MpiX3SGSnbOD2xUalbE5g==",
+        "dependencies": {}
+      },
+      "iteretijs@0.2.3": {
+        "integrity": "sha512-IDYbushqDuGNfo5Y68h4YaQL8fkPobiz5rr7aX7GMtiz+HLA3UOqaIuWKHXv3tC3h8UYphP/KYIUe7mRo10Y0g==",
         "dependencies": {}
       },
       "js-levenshtein@1.1.6": {
