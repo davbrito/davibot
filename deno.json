@@ -60,6 +60,7 @@
     "@std/path": "jsr:@std/path@^1.0.6",
     "@std/random": "jsr:@std/random@^0.1.0",
     "@std/streams": "jsr:@std/streams@^1.0.5",
+    "@std/streams/unstable-fixed-chunk-stream": "jsr:@std/streams@^1.0.5/unstable-fixed-chunk-stream",
     "@std/testing": "jsr:@std/testing@^1.0.2",
     "esbuild": "npm:esbuild@^0.24.0",
     "grammy": "https://deno.land/x/grammy@v1.30.0/mod.ts",
