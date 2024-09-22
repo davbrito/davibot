@@ -149,7 +149,7 @@ async function replyMore(
     });
   } else {
     await ctx.replyWithReact(contenido, {
-      reply_to_message_id: ctx.message?.message_id,
+      reply_to_message_id: ctx.callbackQuery?.message?.message_id,
       link_preview_options: { is_disabled: true },
       reply_markup: inline_keyboard,
     });

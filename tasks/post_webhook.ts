@@ -1,3 +1,4 @@
+import "@std/dotenv/load";
 import { assert } from "@std/assert";
 import { parseArgs, promptSecret } from "@std/cli";
 
@@ -10,7 +11,7 @@ const options = parseArgs(Deno.args, {
   },
   default: {
     url: Deno.env.get("WEBHOOK_URL"),
-    secret: Deno.env.get("WEBHOOK_SECRET"),
+    secret: Deno.env.get("BOT_SECRET"),
     token: Deno.env.get("BOT_TOKEN"),
   },
 });
