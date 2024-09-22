@@ -23,7 +23,7 @@ export class DbContext {
     value: unknown,
     options?: {
       expireIn?: number;
-    }
+    },
   ) {
     const kv = await this.getKv();
     return await kv.set(key, value, options);

@@ -24,7 +24,7 @@ export function react<C extends Context>(): MiddlewareFn<C & ReactFlavor> {
       return ctx.reply(
         ctx.renderReactText(node),
         { ...options, parse_mode: "HTML" },
-        ...args
+        ...args,
       );
     };
 

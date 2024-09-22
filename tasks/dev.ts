@@ -15,7 +15,7 @@ const dotenv = await load().then((e) =>
     .parse({
       ...e,
       ...Deno.env.toObject(),
-    })
+    }),
 );
 
 async function createConfigsManifest(): Promise<string> {
@@ -65,7 +65,7 @@ async function getRestrictions() {
       json = dotenv.RESTRICTIONS;
     } else {
       json = await Deno.readTextFile(
-        new URL("../restrictions.json", import.meta.url)
+        new URL("../restrictions.json", import.meta.url),
       );
     }
 

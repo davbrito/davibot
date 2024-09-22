@@ -44,7 +44,7 @@ export const config: CommandConfig = {
               <>Your request could not be completed. Please try again later.</>
               {"\n"}
               <>If the problem persists, please contact the bot owner.</>
-            </>
+            </>,
           );
           return;
         }
@@ -90,7 +90,7 @@ async function fetchCodeExample(lang: string) {
         owner,
         repo,
         path: item.path,
-      }
+      },
     );
 
     return { code: String(code.data), file: item };

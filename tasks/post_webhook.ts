@@ -52,7 +52,7 @@ const handler = actions[action as keyof typeof actions];
 if (!handler) {
   console.log(
     "Usage: deno run --allow-net --allow-read --allow-env webhook.ts [action]\n" +
-      "Actions: delete, set, get"
+      "Actions: delete, set, get",
   );
   Deno.exit(1);
 }

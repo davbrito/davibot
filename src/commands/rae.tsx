@@ -50,7 +50,7 @@ async function replyWithWord(ctx: AppContextType, palabra: string | undefined) {
       {
         reply_to_message_id: ctx.message?.message_id,
         reply_markup: inline_keyboard,
-      }
+      },
     );
     return;
   }
@@ -93,7 +93,7 @@ async function replyMore(
   ctx: AppContextType,
   page: number,
   palabra: string | undefined,
-  messageMode: "create" | "edit"
+  messageMode: "create" | "edit",
 ) {
   if (!palabra) {
     await ctx.reply("Por favor, introduce una palabra");
@@ -206,14 +206,14 @@ async function fetchWord(db: DbContext, palabra: string) {
             word: word,
             label: sugerencia.textContent,
           };
-        }
+        },
       ),
     };
   }
 
   const etimologia = Array.from(
     resultados?.querySelector(".n2,.n3")?.childNodes ?? [],
-    (child) => reformatNode(child)
+    (child) => reformatNode(child),
   );
 
   const acepciones = Array.from(
@@ -245,7 +245,7 @@ async function fetchWord(db: DbContext, palabra: string) {
           )}
         </Fragment>
       );
-    }
+    },
   );
 
   const more = Array.from(
@@ -259,12 +259,12 @@ async function fetchWord(db: DbContext, palabra: string) {
             expandAbbreviations: false,
             italicSelectors: ["abbr.c", ".h"],
             boldSelectors: [".n_acep", ".u"],
-          })
+          }),
         );
         node = node.nextElementSibling;
       }
       return { title, acepciones };
-    }
+    },
   );
 
   return {
@@ -284,7 +284,7 @@ function reformatNode(
     italicSelectors?: string[];
     boldSelectors?: string[];
     underlineSelectors?: string[];
-  } = {}
+  } = {},
 ): ReactNode {
   const {
     expandAbbreviations = true,
@@ -318,11 +318,11 @@ function reformatNode(
 
   const element = node as Element;
   const isItalic = italicSelectors?.some((selector) =>
-    element.matches(selector)
+    element.matches(selector),
   );
   const isBold = boldSelectors?.some((selector) => element.matches(selector));
   const isUnderline = underlineSelectors?.some((selector) =>
-    element.matches(selector)
+    element.matches(selector),
   );
 
   const result: ReactNode = (() => {

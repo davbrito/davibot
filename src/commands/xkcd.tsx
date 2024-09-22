@@ -7,7 +7,7 @@ export const config: CommandConfig = {
     const idRegex = /^\d+$/;
     bot.command("xkcd", async (ctx) => {
       let replyMsgPromise: ReturnType<typeof ctx.reply> | null = ctx.reply(
-        "Getting comic... 🤔"
+        "Getting comic... 🤔",
       );
 
       const replyError = async () => {
@@ -52,7 +52,7 @@ export const config: CommandConfig = {
 
         if (!res.ok) {
           console.error(
-            `Error while fetching xkcd comic: ${res.status} ${res.statusText}`
+            `Error while fetching xkcd comic: ${res.status} ${res.statusText}`,
           );
           await replyError();
           return;
@@ -71,7 +71,7 @@ export const config: CommandConfig = {
                 <a href={`https://xkcd.com/${comic.num}`}>
                   xkcd #{comic.num} ({comic.year}/{comic.month}/{comic.day})
                 </a>
-              </>
+              </>,
             ),
             parse_mode: "HTML",
             reply_to_message_id: ctx.message?.message_id,

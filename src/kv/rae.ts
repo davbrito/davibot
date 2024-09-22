@@ -28,7 +28,7 @@ export class RaeRepository {
           if (last === DELIMITER) {
             throw new Error("Cache is corrupted");
           }
-        })
+        }),
       )
       .pipeThrough(new TextDecoderStream());
 
@@ -47,7 +47,7 @@ export class RaeRepository {
       }
 
       for await (const chunk of value.pipeThrough(
-        new FixedChunkStream(MAX_BYTE_SIZE)
+        new FixedChunkStream(MAX_BYTE_SIZE),
       )) {
         console.log(`caching ${word} chunk ${i}`);
         op.set(["rae-cache", word, i++], chunk, {

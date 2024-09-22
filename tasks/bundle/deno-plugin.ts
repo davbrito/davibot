@@ -24,7 +24,7 @@ export function denoPlugin({
             imports: importMap.imports,
             scopes: importMap.scopes,
           },
-          baseUrl
+          baseUrl,
         );
       });
 
@@ -42,7 +42,7 @@ export function denoPlugin({
         const resolved = resolveModuleSpecifier(
           args.path,
           importMap,
-          importerUrl
+          importerUrl,
         );
 
         const schema = resolved.slice(0, resolved.indexOf(":") + 1);
@@ -64,12 +64,12 @@ export function denoPlugin({
           const response = await fetch(path);
           if (!response.ok) {
             throw new Error(
-              `Failed to fetch ${path}: ${response.status} ${response.statusText}`
+              `Failed to fetch ${path}: ${response.status} ${response.statusText}`,
             );
           }
 
           const [contentType] = parseMediaType(
-            response.headers.get("content-type") ?? ""
+            response.headers.get("content-type") ?? "",
           );
           const contents = await response.arrayBuffer();
 
@@ -77,7 +77,7 @@ export function denoPlugin({
             contents: new Uint8Array(contents),
             loader: loaders[contentType],
           };
-        }
+        },
       );
     },
   };
