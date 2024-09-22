@@ -35,12 +35,12 @@ export const setupCommands: SetupFunction = async (bot) => {
       (ctx) => ctx.message?.text?.match(/^\/(\w+)/)?.[1],
       {
         about: (ctx) => ctx.reply("Author: @" + manifest.author),
-        end: (ctx) => {
-          ctx.session.clean();
+        end: async (ctx) => {
+          await ctx.sessionManager.clean();
           return ctx.reply("Bye");
         },
-      }
-    )
+      },
+    ),
   );
 
   await bot.api.setMyCommands(
@@ -49,7 +49,7 @@ export const setupCommands: SetupFunction = async (bot) => {
       .map((command) => ({
         command: command.command,
         description: command.description || "",
-      }))
+      })),
   );
 
   async function loadCommandConfigs(): Promise<CommandConfig[]> {
