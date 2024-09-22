@@ -36,6 +36,8 @@ export async function serveWebhook(
 
           if (response.status === 401) {
             console.error("Unauthorized request", req);
+          } else if (response.status !== 200) {
+            console.error("Error handling update", req, response);
           }
           return response;
         },
