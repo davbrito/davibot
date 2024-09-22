@@ -53,12 +53,16 @@ export async function serveWebhook(
       try {
         return await routerHandler(req, info);
       } catch (err) {
-        console.error(err);
+        console.error("Internal server error", err);
         return new Response("Internal Server Error", { status: 500 });
       }
     },
     onListen(addr) {
       logStart(bot, addr);
+    },
+    onError(error) {
+      console.error("Internal server error", error);
+      return new Response("Internal Server Error", { status: 500 });
     },
   });
 
