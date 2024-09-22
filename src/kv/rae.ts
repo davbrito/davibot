@@ -9,33 +9,39 @@ export class RaeRepository {
   constructor(private readonly db: DbContext) {}
 
   async #getFromCache(word: string) {
-    const kv = await this.db.getKv();
-    const list = kv.list<Uint8Array | typeof DELIMITER>({
-      prefix: ["rae-cache", word],
-    });
-    const stream = ReadableStream.from(list)
-      .pipeThrough(
-        toTransformStream(async function* (stream) {
-          let last;
-          for await (const { value } of stream) {
-            last = value;
-            if (value === DELIMITER) break;
-            yield value;
-          }
+    try {
+      const kv = await this.db.getKv();
+      const list = kv.list<Uint8Array | typeof DELIMITER>({
+        prefix: ["rae-cache", word],
+      });
+      const stream = ReadableStream.from(list)
+        .pipeThrough(
+          toTransformStream(async function* (stream) {
+            let last;
+            for await (const { value } of stream) {
+              last = value;
+              if (value === DELIMITER) break;
+              yield value;
+            }
 
-          if (!last) return;
+            if (!last) return;
 
-          if (last === DELIMITER) {
-            throw new Error("Cache is corrupted");
-          }
-        }),
-      )
-      .pipeThrough(new TextDecoderStream());
+            if (last === DELIMITER) {
+              throw new Error("Cache is corrupted");
+            }
+          }),
+        )
+        .pipeThrough(new TextDecoderStream());
 
-    return await toText(stream);
+      return await toText(stream);
+    } catch (error) {
+      console.error(`Failed to get cached word: ${word}`, String(error));
+      return undefined;
+    }
   }
 
   async #setCache(word: string, value: ReadableStream<Uint8Array>) {
+    await Promise.resolve();
     try {
       let i = 0;
       const kv = await this.db.getKv();
@@ -62,14 +68,11 @@ export class RaeRepository {
 
   async getWordHtml(word: string) {
     const url = `https://dle.rae.es/${encodeURI(word)}`;
-    const cached = await this.#getFromCache(word).catch((err) => {
-      console.error(`Failed to get cached word: ${word}`, String(err));
-    });
+    const cached = await this.#getFromCache(word);
     if (cached) return { url, html: cached };
 
     const response = await fetch(url);
-    const body = response.clone().body!;
-    Promise.resolve().then(() => this.#setCache(word, body));
+    this.#setCache(word, response.clone().body!);
     const html = await response.text();
     return { url, html };
   }

@@ -28,6 +28,11 @@ export class DbContext {
     const kv = await this.getKv();
     return await kv.set(key, value, options);
   }
+  async delete(key: Deno.KvKey): Promise<void> {
+    const kv = await this.getKv();
+    await kv.delete(key);
+  }
+
   async clearCache(): Promise<void> {
     await this.rae.clearCache();
   }

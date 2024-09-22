@@ -10,6 +10,6 @@ export class BotInfoRepository {
   }
 
   async set(value: UserFromGetMe) {
-    await this.db.getKv().then((kv) => kv.set(["bot-info"], value));
+    await this.db.set(["bot-info"], value);
   }
 }

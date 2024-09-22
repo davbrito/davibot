@@ -75,7 +75,7 @@ class KvAdapter<T> implements StorageAdapter<T> {
 
   async delete(key: string): Promise<void> {
     await DbContext.use(async (db) => {
-      await db.set(["session", key], undefined);
+      await db.delete(["session", key]);
     });
   }
 
