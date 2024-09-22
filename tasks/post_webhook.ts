@@ -1,6 +1,11 @@
-import "@std/dotenv/load";
+import { load } from "@std/dotenv";
 import { assert } from "@std/assert";
 import { parseArgs, promptSecret } from "@std/cli";
+
+await load({
+  envPath: Deno.env.get("ENV") ? `.env.${Deno.env.get("ENV")}` : ".env",
+  export: true,
+});
 
 const options = parseArgs(Deno.args, {
   string: ["url", "secret", "token"],
