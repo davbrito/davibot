@@ -41,7 +41,11 @@ export class RaeRepository {
       const kv = await this.db.getKv();
 
       const op = kv.atomic();
-      op.delete(["rae-cache", word]);
+
+      for await (const { key } of kv.list({ prefix: ["rae-cache", word] })) {
+        op.delete(key);
+      }
+
       for await (const chunk of value.pipeThrough(
         new FixedChunkStream(MAX_BYTE_SIZE)
       )) {
