@@ -1,4 +1,4 @@
-import { type HydrateFlavor, hydrate } from "@grammyjs/hydrate";
+import { type HydrateFlavor, hydrate } from "@grammyjs/hydrate/mod.ts";
 import { sample } from "@std/random";
 import { Bot, Context } from "grammy";
 import { setupCommands } from "./commands.ts";
@@ -38,7 +38,7 @@ async function main() {
     withDb(),
     hydrate(),
     react(),
-    SessionManager.middleware(),
+    SessionManager.middleware()
   );
 
   await setupCommands(bot);
@@ -91,13 +91,13 @@ async function main() {
   bot.on("edited_message", (ctx) =>
     ctx.reply("Ajá! Uldepasao! Editaste eto!", {
       reply_to_message_id: ctx.editedMessage.message_id,
-    }),
+    })
   );
 
   bot.catch((error) => {
     console.error(
       'Error caught in "bot.catch":',
-      String(error) + "\n" + error.stack,
+      String(error) + "\n" + error.stack
     );
   });
 

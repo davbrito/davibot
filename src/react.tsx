@@ -1,6 +1,7 @@
 /// <reference types="npm:@types/react" />
 /// <reference types="npm:@types/react-dom" />
 import type { Context, MiddlewareFn } from "grammy";
+import { MessageXFragment } from "@grammyjs/hydrate/data/message.ts";
 import { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -11,9 +12,17 @@ type ReplyWithReact = Context["reply"] extends (
   ? (node: ReactNode, ...args: A) => R
   : never;
 
+type EditMessageTextWithReact = MessageXFragment["editText"] extends (
+  text: string,
+  ...args: infer A
+) => infer R
+  ? (message: MessageXFragment, node: ReactNode, ...args: A) => R
+  : never;
+
 export type ReactFlavor = {
   replyWithReact: ReplyWithReact;
   renderReactText: (node: ReactNode) => string;
+  editMessageTextWithReact: EditMessageTextWithReact;
 };
 
 export function react<C extends Context>(): MiddlewareFn<C & ReactFlavor> {
@@ -21,10 +30,16 @@ export function react<C extends Context>(): MiddlewareFn<C & ReactFlavor> {
     ctx.renderReactText = (node) => renderToStaticMarkup(<>{node}</>);
 
     ctx.replyWithReact = (node, options, ...args) => {
-      return ctx.reply(
-        ctx.renderReactText(node),
+      const htmlString = ctx.renderReactText(node);
+      return ctx.reply(htmlString, { ...options, parse_mode: "HTML" }, ...args);
+    };
+
+    ctx.editMessageTextWithReact = (message, node, options, ...args) => {
+      const htmlString = ctx.renderReactText(node);
+      return message.editText(
+        htmlString,
         { ...options, parse_mode: "HTML" },
-        ...args,
+        ...args
       );
     };
 

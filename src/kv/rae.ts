@@ -52,10 +52,11 @@ export class RaeRepository {
         op.delete(key);
       }
 
-      for await (const chunk of value.pipeThrough(
-        new FixedChunkStream(MAX_BYTE_SIZE),
-      )) {
-        console.log(`caching ${word} chunk ${i}`);
+      for await (
+        const chunk of value.pipeThrough(
+          new FixedChunkStream(MAX_BYTE_SIZE),
+        )
+      ) {
         op.set(["rae-cache", word, i++], chunk, {
           expireIn: 1000 * 60 * 60 * 24,
         });

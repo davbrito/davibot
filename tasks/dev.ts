@@ -5,6 +5,8 @@ import { z } from "zod";
 import { generateApis } from "./apis.ts";
 import { manifestPath, sourcePath } from "./constants.ts";
 import { formatCode } from "./utils.ts";
+import * as iasync from "iteretijs/async";
+import { relative } from "node:path";
 
 const dotenv = await load().then((e) =>
   z
@@ -19,16 +21,21 @@ const dotenv = await load().then((e) =>
 );
 
 async function createConfigsManifest(): Promise<string> {
-  const COMMAND_FILE_REGEX = /\.tsx?$/;
   const commandsPath = path.join(sourcePath, "commands");
 
-  const commandFilenames: string[] = [];
-
-  for await (const file of Deno.readDir(commandsPath)) {
-    if (file.isFile && COMMAND_FILE_REGEX.test(file.name)) {
-      commandFilenames.push(file.name);
-    }
-  }
+  const commandFilenames = await Array.fromAsync(iasync.map(
+    iasync.concat(
+      fs.expandGlob("*.{ts,tsx}", {
+        root: commandsPath,
+        includeDirs: false,
+      }),
+      fs.expandGlob("*/index.{ts,tsx}", {
+        root: commandsPath,
+        includeDirs: false,
+      }),
+    ),
+    (x) => relative(commandsPath, x.path),
+  ));
 
   const commandEntries: string[] = [];
 

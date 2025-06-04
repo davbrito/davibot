@@ -7,7 +7,6 @@ export const config: CommandConfig = {
   setup: (bot) => {
     bot.command("qr", async (ctx) => {
       const text = ctx.match;
-      console.log("match", text);
 
       if (!text) {
         await ctx.reply("Please provide some text to generate a QR code from");
@@ -28,9 +27,9 @@ export const config: CommandConfig = {
       if (!knownFormats.includes(options.format)) {
         await ctx.reply(
           `Formato desconhecido. Formatos suportados: ${knownFormats.join(
-            ", ",
+            ", "
           )}`,
-          { reply_to_message_id: msg_id },
+          { reply_to_message_id: msg_id }
         );
       } else if (!imageFormats.includes(options.format)) {
         const linkEmoji = String.fromCodePoint(0x1f517);
@@ -85,10 +84,8 @@ function parseToArgv(text: string): string[] {
   while (argv.length) {
     const arg = argv.shift()!;
     if (arg[0] === '"') {
-      console.log('matchQuote "', arg);
       result.push(matchQuote('"', argv, pos, arg));
     } else if (arg[0] === "'") {
-      console.log("matchQuote '", arg);
       result.push(matchQuote("'", argv, pos, arg));
     } else {
       result.push(arg);
