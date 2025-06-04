@@ -1,14 +1,16 @@
 import { Element, Node, NodeType } from "@b-fuze/deno-dom/wasm-noinit";
 import { Fragment, ReactNode } from "react";
 
+interface ReformatNodeOptions {
+  expandAbbreviations?: boolean;
+  italicSelectors?: string[];
+  boldSelectors?: string[];
+  underlineSelectors?: string[];
+}
+
 export function reformatNode(
   node: Node,
-  ops: {
-    expandAbbreviations?: boolean;
-    italicSelectors?: string[];
-    boldSelectors?: string[];
-    underlineSelectors?: string[];
-  } = {}
+  ops: ReformatNodeOptions = {}
 ): ReactNode {
   const {
     expandAbbreviations = true,
@@ -41,11 +43,7 @@ export function reformatNode(
     }
 
     return (
-      <TagName {...props}>
-        {Array.from(node.childNodes, (node, index) => (
-          <Fragment key={index}>{reformatNode(node, ops)}</Fragment>
-        ))}
-      </TagName>
+      <TagName {...props}>{reformatNodeList(node.childNodes, ops)}</TagName>
     );
   }
 
@@ -58,16 +56,14 @@ export function reformatNode(
   );
 
   const result: ReactNode = (() => {
-    if (node.nodeName === "ABBR") {
-      if (!expandAbbreviations) {
-        return Array.from(node.childNodes, (node) => reformatNode(node, ops));
-      }
-      return (
-        (node as Element).getAttribute("title") ??
-        Array.from(node.childNodes, (node) => reformatNode(node, ops))
-      );
+    if (
+      element.nodeName === "ABBR" &&
+      expandAbbreviations &&
+      element.getAttribute("title")
+    ) {
+      return element.getAttribute("title");
     }
-    return Array.from(node.childNodes, (node) => reformatNode(node, ops));
+    return reformatNodeList(element.childNodes, ops);
   })();
 
   const tags = [
@@ -80,4 +76,15 @@ export function reformatNode(
     if (use) return <Tag>{acc}</Tag>;
     return acc;
   }, result);
+}
+
+export function reformatNodeList(
+  nodes: Iterable<Node> | null | undefined,
+  ops: ReformatNodeOptions = {}
+): ReactNode {
+  if (!nodes) return null;
+
+  return Array.from(nodes, (node, index) => (
+    <Fragment key={index}>{reformatNode(node, ops)}</Fragment>
+  ));
 }

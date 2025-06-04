@@ -1,5 +1,5 @@
-/// <reference types="npm:@types/react" />
-/// <reference types="npm:@types/react-dom" />
+/// <reference types="@types/react" />
+/// <reference types="@types/react-dom" />
 import type { Context, MiddlewareFn } from "grammy";
 import { MessageXFragment } from "@grammyjs/hydrate/data/message.ts";
 import { ReactNode } from "react";

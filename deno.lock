@@ -51,14 +51,16 @@
     "npm:@octokit/core@^7.0.2": "7.0.2",
     "npm:@types/node@*": "22.10.1",
     "npm:@types/react-dom@*": "19.1.6_@types+react@19.1.6",
+    "npm:@types/react-dom@^19.1.6": "19.1.6_@types+react@19.1.6",
     "npm:@types/react@*": "19.1.6",
+    "npm:@types/react@^19.1.6": "19.1.6",
     "npm:esbuild@0.25.5": "0.25.5",
     "npm:iteretijs@0.2.3": "0.2.3",
     "npm:octokit@*": "5.0.3_@octokit+core@7.0.2",
     "npm:openapi-typescript-fetch@2.2.0": "2.2.0",
     "npm:openapi-typescript@7.8.0": "7.8.0_typescript@5.8.3",
-    "npm:react-dom@18.2.0": "18.2.0_react@18.2.0",
-    "npm:react@18.2.0": "18.2.0",
+    "npm:react-dom@19.1.0": "19.1.0_react@19.1.0",
+    "npm:react@19.1.0": "19.1.0",
     "npm:typescript@5.8.3": "5.8.3",
     "npm:zod@3.25.51": "3.25.51"
   },
@@ -805,13 +807,6 @@
     "json-schema-traverse@1.0.0": {
       "integrity": "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug=="
     },
-    "loose-envify@1.4.0": {
-      "integrity": "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==",
-      "dependencies": [
-        "js-tokens"
-      ],
-      "bin": true
-    },
     "minimatch@5.1.6": {
       "integrity": "sha512-lKwV/1brpG6mBUFHtb7NUmtABCb2WZZmm2wNiOA5hAb8VdCS4B3dtMWyvcoViccwAW/COERjXLt0zP1zXUN26g==",
       "dependencies": [
@@ -867,28 +862,21 @@
     "pluralize@8.0.0": {
       "integrity": "sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA=="
     },
-    "react-dom@18.2.0_react@18.2.0": {
-      "integrity": "sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==",
+    "react-dom@19.1.0_react@19.1.0": {
+      "integrity": "sha512-Xs1hdnE+DyKgeHJeJznQmYMIBG3TKIHJJT95Q58nHLSrElKlGQqDTR2HQ9fx5CN/Gk6Vh/kupBTDLU11/nDk/g==",
       "dependencies": [
-        "loose-envify",
         "react",
         "scheduler"
       ]
     },
-    "react@18.2.0": {
-      "integrity": "sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==",
-      "dependencies": [
-        "loose-envify"
-      ]
+    "react@19.1.0": {
+      "integrity": "sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg=="
     },
     "require-from-string@2.0.2": {
       "integrity": "sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw=="
     },
-    "scheduler@0.23.2": {
-      "integrity": "sha512-UOShsPwz7NrMUqhR6t0hWjFduvOzbtv7toDH1/hIrfRNIDBnnBWd0CwJTGvTpngVlmwGCdP9/Zl/tVrDqcuYzQ==",
-      "dependencies": [
-        "loose-envify"
-      ]
+    "scheduler@0.26.0": {
+      "integrity": "sha512-NlHwttCI/l5gCPR3D1nNXtWABUmBwvZpEQiD4IXSbIDq8BzLIK/7Ir5gTFSGZDUu37K5cMNp0hFtzO38sC7gWA=="
     },
     "supports-color@10.0.0": {
       "integrity": "sha512-HRVVSbCCMbj7/kdWF9Q+bbckjBHLtHMEoJWlkmYzzdwhYMkjkOwubLM6t7NbWKjgKamGDrWL1++KrjUO1t9oAQ=="
@@ -1004,12 +992,14 @@
       "jsr:@std/streams@1.0.9",
       "jsr:@std/testing@1.0.13",
       "npm:@octokit/core@7.0.2",
+      "npm:@types/react-dom@^19.1.6",
+      "npm:@types/react@^19.1.6",
       "npm:esbuild@0.25.5",
       "npm:iteretijs@0.2.3",
       "npm:openapi-typescript-fetch@2.2.0",
       "npm:openapi-typescript@7.8.0",
-      "npm:react-dom@18.2.0",
-      "npm:react@18.2.0",
+      "npm:react-dom@19.1.0",
+      "npm:react@19.1.0",
       "npm:typescript@5.8.3",
       "npm:zod@3.25.51"
     ]

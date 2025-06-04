@@ -4,7 +4,7 @@ import { Fragment } from "react";
 import type { CommandConfig } from "../../commands.ts";
 import { DbContext } from "../../kv/dbcontext.ts";
 import { AppContextType } from "../../main.tsx";
-import { reformatNode } from "./dom.tsx";
+import { reformatNode, reformatNodeList } from "./dom.tsx";
 import {
   createInlineKeyboardPagination,
   makeKeyboardCallbackQuery,
@@ -136,12 +136,12 @@ async function replyWithWord(
   const contenido = (
     <>
       <b>{word}</b>
-      {etimologia.length > 0 && (
+      {etimologia ? (
         <>
           {"\n\n"}
           {etimologia}
         </>
-      )}
+      ) : null}
       {definiciones.map((acepcion) => (
         <>
           {"\n\n"}
@@ -303,11 +303,6 @@ async function fetchWord({
     };
   }
 
-  const etimologia = Array.from(
-    acepcion.querySelector(ETIMOLOGY_SELECTOR)?.childNodes ?? [],
-    (child) => reformatNode(child)
-  );
-
   const definiciones = Array.from(
     acepcion.querySelectorAll("[class^=j]"),
     (acepcion, index) => {
@@ -377,7 +372,9 @@ async function fetchWord({
   return {
     url,
     word,
-    etimologia,
+    etimologia: reformatNodeList(
+      acepcion.querySelector(ETIMOLOGY_SELECTOR)?.childNodes
+    ),
     definiciones: definiciones,
     more,
     hasMore: !!more.length,
