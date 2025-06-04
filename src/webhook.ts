@@ -1,5 +1,5 @@
 import { green } from "@std/fmt/colors";
-import { route } from "@std/http";
+import { route } from "@std/http/unstable-route";
 import { Bot, webhookCallback } from "grammy";
 import type { AppContextType } from "./main.tsx";
 import { logStart, measureDuration } from "./utils.ts";
@@ -7,7 +7,7 @@ import { DbContext } from "./kv/dbcontext.ts";
 
 export async function serveWebhook(
   bot: Bot<AppContextType>,
-  BOT_SECRET: string,
+  BOT_SECRET: string
 ) {
   console.log(green("Running on webhook mode"));
   const handleUpdate = webhookCallback(bot, "std/http", {
@@ -43,7 +43,7 @@ export async function serveWebhook(
         },
       },
     ],
-    () => Response.json({ error: "Not found" }, { status: 404 }),
+    () => Response.json({ error: "Not found" }, { status: 404 })
   );
 
   const server = Deno.serve({

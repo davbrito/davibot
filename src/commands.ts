@@ -2,6 +2,7 @@ import manifest from "$manifest";
 import { Bot, Composer } from "grammy";
 import { Router } from "@grammyjs/router";
 import type { AppContextType } from "./main.tsx";
+import { resolveCommandConfig } from "./manifest.ts";
 
 type MaybePromise<T> = T | Promise<T>;
 export type SetupFunction = (bot: Bot<AppContextType>) => MaybePromise<void>;
@@ -39,8 +40,8 @@ export const setupCommands: SetupFunction = async (bot) => {
           await ctx.sessionManager.clean();
           return ctx.reply("Bye");
         },
-      },
-    ),
+      }
+    )
   );
 
   await bot.api.setMyCommands(
@@ -49,15 +50,16 @@ export const setupCommands: SetupFunction = async (bot) => {
       .map((command) => ({
         command: command.command,
         description: command.description || "",
-      })),
+      }))
   );
 
   async function loadCommandConfigs(): Promise<CommandConfig[]> {
     const commands: CommandConfig[] = [];
 
     for (const commandKey of Object.keys(manifest.commands)) {
-      const command =
-        manifest.commands[commandKey as keyof typeof manifest.commands];
+      const command = await resolveCommandConfig(
+        manifest.commands[commandKey as keyof typeof manifest.commands]
+      );
       const config = command.config;
       const setup = config?.setup;
 

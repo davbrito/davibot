@@ -1,5 +1,6 @@
 import { Octokit } from "@octokit/core";
 import type { CommandConfig } from "../commands.ts";
+import { DEBUG } from "../config.ts";
 
 const octokit = new Octokit();
 
@@ -44,7 +45,8 @@ export const config: CommandConfig = {
               <>Your request could not be completed. Please try again later.</>
               {"\n"}
               <>If the problem persists, please contact the bot owner.</>
-            </>,
+              {DEBUG ? <pre>{error.message}</pre> : null}
+            </>
           );
           return;
         }
@@ -90,7 +92,7 @@ async function fetchCodeExample(lang: string) {
         owner,
         repo,
         path: item.path,
-      },
+      }
     );
 
     return { code: String(code.data), file: item };

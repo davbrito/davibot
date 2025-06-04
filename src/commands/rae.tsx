@@ -6,7 +6,7 @@ import {
   initParser,
 } from "@b-fuze/deno-dom/wasm-noinit";
 import { InlineKeyboard } from "grammy";
-import { range } from "npm:iteretijs";
+import { range } from "iteretijs";
 import { Fragment, type ReactNode } from "react";
 import type { CommandConfig } from "../commands.ts";
 import { DbContext } from "../kv/dbcontext.ts";
@@ -51,7 +51,7 @@ async function replyWithWord(ctx: AppContextType, palabra: string | undefined) {
       {
         reply_to_message_id: ctx.message?.message_id,
         reply_markup: inline_keyboard,
-      },
+      }
     );
     return;
   }
@@ -94,7 +94,7 @@ async function replyMore(
   ctx: AppContextType,
   page: number,
   palabra: string | undefined,
-  messageMode: "create" | "edit",
+  messageMode: "create" | "edit"
 ) {
   if (!palabra) {
     await ctx.reply("Por favor, introduce una palabra");
@@ -118,7 +118,7 @@ async function replyMore(
   const inline_keyboard = createInlineKeyboardPagination(
     page,
     palabra,
-    pageCount,
+    pageCount
   );
 
   const contenido = (
@@ -188,7 +188,7 @@ export const config: CommandConfig = {
 function createInlineKeyboardPagination(
   page: number,
   palabra: string,
-  pageCount: number,
+  pageCount: number
 ) {
   if (pageCount < 2) return undefined;
 
@@ -200,12 +200,12 @@ function createInlineKeyboardPagination(
 
   const pageSubset = range(
     Math.max(0, page - 2),
-    Math.min(page + 3, pageCount),
+    Math.min(page + 3, pageCount)
   );
   for (const i of pageSubset) {
     inline_keyboard.text(
       i === page ? `_${i + 1}_` : String(i + 1),
-      `rae-more-update ${i} ${palabra}`,
+      `rae-more-update ${i} ${palabra}`
     );
   }
 
@@ -239,14 +239,14 @@ async function fetchWord(db: DbContext, palabra: string) {
             word: word,
             label: sugerencia.textContent,
           };
-        },
+        }
       ),
     };
   }
 
   const etimologia = Array.from(
     resultados?.querySelector(".n2,.n3")?.childNodes ?? [],
-    (child) => reformatNode(child),
+    (child) => reformatNode(child)
   );
 
   const acepciones = Array.from(
@@ -278,7 +278,7 @@ async function fetchWord(db: DbContext, palabra: string) {
           )}
         </Fragment>
       );
-    },
+    }
   );
 
   const more = Array.from(
@@ -292,12 +292,12 @@ async function fetchWord(db: DbContext, palabra: string) {
             expandAbbreviations: false,
             italicSelectors: ["abbr.c", ".h"],
             boldSelectors: [".n_acep", ".u"],
-          }),
+          })
         );
         node = node.nextElementSibling;
       }
       return { title, acepciones };
-    },
+    }
   );
 
   return {
@@ -317,7 +317,7 @@ function reformatNode(
     italicSelectors?: string[];
     boldSelectors?: string[];
     underlineSelectors?: string[];
-  } = {},
+  } = {}
 ): ReactNode {
   const {
     expandAbbreviations = true,
@@ -351,11 +351,11 @@ function reformatNode(
 
   const element = node as Element;
   const isItalic = italicSelectors?.some((selector) =>
-    element.matches(selector),
+    element.matches(selector)
   );
   const isBold = boldSelectors?.some((selector) => element.matches(selector));
   const isUnderline = underlineSelectors?.some((selector) =>
-    element.matches(selector),
+    element.matches(selector)
   );
 
   const result: ReactNode = (() => {

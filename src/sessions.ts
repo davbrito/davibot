@@ -10,11 +10,9 @@ import { HiSession } from "./hi-session.ts";
 import { DbContext } from "./kv/dbcontext.ts";
 import { AppContextType } from "./main.tsx";
 
-const sessionDataSchema = z
-  .object({
-    hiRequestId: z.number().nullable(),
-  })
-  .passthrough();
+const sessionDataSchema = z.looseObject({
+  hiRequestId: z.number().nullable(),
+});
 
 export type SessionData = z.infer<typeof sessionDataSchema>;
 

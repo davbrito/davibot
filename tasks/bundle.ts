@@ -1,7 +1,14 @@
+import { denoPlugins } from "@luca/esbuild-deno-loader";
 import { fromFileUrl } from "@std/path";
 import * as esbuild from "esbuild";
 import denoConfig from "../deno.json" with { type: "json" };
-import { denoPlugin } from "./bundle/deno-plugin.ts";
+import { z } from "zod";
+
+const { MINIFY } = z.object({
+  MINIFY: z.stringbool().default(true),
+}).parse(
+  Deno.env.toObject(),
+);
 
 const entry = fromFileUrl(import.meta.resolve("../src/main.tsx"));
 const outdi = fromFileUrl(import.meta.resolve("../dist/"));
@@ -9,18 +16,17 @@ const outdi = fromFileUrl(import.meta.resolve("../dist/"));
 const result = await esbuild.build({
   entryPoints: [entry],
   format: "esm",
-  target: "deno1.46",
+  target: "deno2.3",
   outdir: outdi,
   plugins: [
-    denoPlugin({
-      importMap: denoConfig,
-      baseUrl: new URL("../", import.meta.url),
+    ...denoPlugins({
+      configPath: fromFileUrl(import.meta.resolve("../deno.json")),
     }),
   ],
   jsx: "automatic",
   jsxImportSource: denoConfig.compilerOptions.jsxImportSource,
   bundle: true,
-  minify: true,
+  minify: MINIFY,
   sourcemap: true,
   treeShaking: true,
   metafile: true,

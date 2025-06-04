@@ -1,10 +1,10 @@
 import { load } from "@std/dotenv";
 import * as fs from "@std/fs";
 import * as path from "@std/path";
+import { z } from "zod";
 import { generateApis } from "./apis.ts";
 import { manifestPath, sourcePath } from "./constants.ts";
 import { formatCode } from "./utils.ts";
-import { z } from "zod";
 
 const dotenv = await load().then((e) =>
   z
@@ -15,7 +15,7 @@ const dotenv = await load().then((e) =>
     .parse({
       ...e,
       ...Deno.env.toObject(),
-    }),
+    })
 );
 
 async function createConfigsManifest(): Promise<string> {
@@ -30,17 +30,15 @@ async function createConfigsManifest(): Promise<string> {
     }
   }
 
-  const imports: string[] = [];
   const commandEntries: string[] = [];
 
   for (const commandPath of commandFilenames) {
     const key = path.basename(commandPath).replace(/\.[^/.]+$/, "");
-    imports.push(`import * as $${key} from "./src/commands/${commandPath}";`);
-    commandEntries.push(`"${key}": $${key}`);
+    const commandValue = `_lazy(() => import("./src/commands/${commandPath}"))`;
+    commandEntries.push(`"${key}": ${commandValue}`);
   }
 
   return `
-    ${imports.join("\n")}
     import type { ManifestSchema, Restrictions } from "./src/manifest.ts";
 
     const restrictions: Restrictions | undefined = ${await getRestrictions()};
@@ -54,6 +52,15 @@ async function createConfigsManifest(): Promise<string> {
     } satisfies ManifestSchema;
 
     export default manifest;
+
+    function _lazy<T>(fn: () => Promise<T>): () => T | Promise<T> {
+      let cache: T | undefined;
+
+      return () => (cache ?? (fn().then((result) => {
+        cache = result;
+        return result;
+      })));
+    }
   `;
 }
 
