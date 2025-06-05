@@ -1,6 +1,7 @@
 import { Octokit } from "@octokit/core";
 import type { CommandConfig } from "../commands.ts";
 import { DEBUG } from "../config.ts";
+import { ReactNode } from "react";
 
 const octokit = new Octokit();
 
@@ -40,14 +41,7 @@ export const config: CommandConfig = {
         });
       } catch (error) {
         if (error instanceof Error && error.name === "HttpError") {
-          await ctx.replyWithReact(
-            <>
-              <>Your request could not be completed. Please try again later.</>
-              {"\n"}
-              <>If the problem persists, please contact the bot owner.</>
-              {DEBUG ? <pre>{error.message}</pre> : null}
-            </>
-          );
+          await ctx.replyWithReact(<HttpErrorMessage error={error} />);
           return;
         }
       }
@@ -56,6 +50,17 @@ export const config: CommandConfig = {
 };
 
 const MAX_FILE_SIZE = 3000;
+
+function HttpErrorMessage({ error }: { error: Error }): ReactNode {
+  return (
+    <>
+      {"Your request could not be completed. Please try again later."}
+      {"\n"}
+      {"If the problem persists, please contact the bot owner."}
+      {DEBUG ? <pre>{error.message}</pre> : null}
+    </>
+  );
+}
 
 // fetch a code example for a given programming language
 async function fetchCodeExample(lang: string) {

@@ -1,6 +1,12 @@
 import { DOMParser, Element, initParser } from "@b-fuze/deno-dom/wasm-noinit";
-import { InlineKeyboard } from "grammy";
-import { Fragment } from "react";
+import { InlineKeyboard, InlineQueryResultBuilder } from "grammy";
+import {
+  Fragment,
+  JSXElementConstructor,
+  ReactElement,
+  ReactNode,
+  ReactPortal,
+} from "react";
 import type { CommandConfig } from "../../commands.ts";
 import { DbContext } from "../../kv/dbcontext.ts";
 import { AppContextType } from "../../main.tsx";
@@ -10,11 +16,12 @@ import {
   makeKeyboardCallbackQuery,
   readKeyboardCallbackQuery,
 } from "./keyboard.ts";
+import { JSX } from "react/jsx-runtime";
 
 export const config: CommandConfig = {
   command: "rae",
   description: "Busca una palabra en la RAE",
-  setup: (bot) => {
+  compose: (bot) => {
     bot.callbackQuery(/^rae-more (.+)$/, async (ctx) => {
       const { palabra, acepcion, pagina, edit } = readKeyboardCallbackQuery(
         ctx.match[1] || ""
@@ -28,12 +35,47 @@ export const config: CommandConfig = {
       const { palabra, acepcion, edit } = readKeyboardCallbackQuery(
         ctx.match[1] || ""
       );
-      await replyWithWord(ctx, palabra, acepcion, edit);
+      await replyWithWord({ ctx, palabra, acepcionIndex: acepcion, edit });
       await ctx.answerCallbackQuery();
     });
+
     bot.command("rae", async (ctx) => {
       const palabra = ctx.match;
-      await replyWithWord(ctx, palabra, 0, false);
+      await replyWithWord({ ctx, palabra, acepcionIndex: 0, edit: false });
+    });
+
+    bot.on("inline_query", async (ctx) => {
+      const palabra = ctx.inlineQuery.query;
+
+      const items = await fetch(
+        `https://dle.rae.es/srv/keys?q=${encodeURIComponent(palabra)}`
+      )
+        .then((r) => r.json() as Promise<string[]>)
+        .catch(() => [])
+        .then((keys) => keys.map((key) => key.split("|")[0] ?? "").slice(0, 5));
+
+      await ctx.inlineQuery.answer(
+        items.map((item) => {
+          return InlineQueryResultBuilder.article(item, item, {
+            reply_markup: new InlineKeyboard().url(
+              "🔗",
+              `https://dle.rae.es/${encodeURI(item)}`
+            ),
+          }).text(item);
+        })
+      );
+    });
+
+    bot.on("chosen_inline_result", async (ctx, next) => {
+      const palabra = ctx.chosenInlineResult.result_id;
+      const messageId = ctx.chosenInlineResult.inline_message_id;
+      if (!messageId) return next();
+      await replyWithWord({
+        ctx,
+        palabra,
+        acepcionIndex: 0,
+        editInlineMessageId: messageId,
+      });
     });
   },
 };
@@ -49,12 +91,19 @@ const getParser = (() => {
   };
 })();
 
-async function replyWithWord(
-  ctx: AppContextType,
-  palabra: string | undefined,
-  acepcionIndex: number,
-  edit: boolean
-) {
+async function replyWithWord({
+  ctx,
+  palabra,
+  acepcionIndex,
+  edit,
+  editInlineMessageId,
+}: {
+  ctx: AppContextType;
+  palabra: string | undefined;
+  acepcionIndex: number;
+  edit?: boolean;
+  editInlineMessageId?: string;
+}) {
   if (!palabra) {
     await ctx.reply("Por favor, introduce una palabra");
     return;
@@ -134,6 +183,56 @@ async function replyWithWord(
   }
 
   const contenido = (
+    <WordAception
+      word={word}
+      etimologia={etimologia}
+      definiciones={definiciones}
+      url={url}
+    />
+  );
+
+  const htmlContent = ctx.renderReactText(contenido);
+
+  const commonOptions = {
+    parse_mode: "HTML",
+    link_preview_options: {
+      is_disabled: true,
+    },
+  } as const;
+
+  if (editInlineMessageId) {
+    console.log("editInlineMessageId", editInlineMessageId);
+    await ctx.api.editMessageTextInline(
+      editInlineMessageId,
+      htmlContent,
+      commonOptions
+    );
+  } else if (edit) {
+    if (ctx.callbackQuery?.message) {
+      await ctx.callbackQuery.message.editText(htmlContent, commonOptions);
+    }
+  } else {
+    await ctx.reply(htmlContent, {
+      ...commonOptions,
+      reply_to_message_id: ctx.message?.message_id,
+    });
+  }
+}
+
+const PAGE_SIZE = 10;
+
+function WordAception({
+  word,
+  etimologia,
+  definiciones,
+  url,
+}: {
+  word: string;
+  etimologia: ReactNode;
+  definiciones: JSX.Element[];
+  url: string;
+}) {
+  return (
     <>
       <b>{word}</b>
       {etimologia ? (
@@ -142,39 +241,18 @@ async function replyWithWord(
           {etimologia}
         </>
       ) : null}
-      {definiciones.map((acepcion) => (
-        <>
+      {definiciones.map((acepcion, aindex) => (
+        <Fragment key={aindex}>
           {"\n\n"}
           {acepcion}
-        </>
+        </Fragment>
       ))}
 
       {"\n\n"}
       <a href={url}>Fuente: RAE</a>
     </>
   );
-
-  if (edit) {
-    if (ctx.callbackQuery?.message) {
-      await ctx.editMessageTextWithReact(ctx.callbackQuery.message, contenido, {
-        link_preview_options: {
-          is_disabled: true,
-        },
-        reply_markup,
-      });
-    }
-  } else {
-    await ctx.replyWithReact(contenido, {
-      reply_to_message_id: ctx.message?.message_id,
-      link_preview_options: {
-        is_disabled: true,
-      },
-      reply_markup,
-    });
-  }
 }
-
-const PAGE_SIZE = 10;
 
 async function replyMore(
   ctx: AppContextType,
@@ -214,19 +292,19 @@ async function replyMore(
     pageCount
   );
 
-  const contenido = (
+  const Contenido = () => (
     <>
-      {sliced?.map(({ title, acepciones }) => (
-        <>
+      {sliced?.map(({ title, acepciones }, index) => (
+        <Fragment key={index}>
           <b>{title}</b>
-          {acepciones.map((acepcion) => (
-            <>
+          {acepciones.map((acepcion, aindex) => (
+            <Fragment key={aindex}>
               {"\n"}
               {acepcion}
-            </>
+            </Fragment>
           ))}
           {"\n\n"}
-        </>
+        </Fragment>
       ))}
 
       {pageCount > 1 && (
@@ -239,14 +317,18 @@ async function replyMore(
 
   if (isEdit) {
     if (ctx.callbackQuery?.message) {
-      await ctx.editMessageTextWithReact(ctx.callbackQuery.message, contenido, {
-        parse_mode: "HTML",
-        reply_markup: inline_keyboard,
-        link_preview_options: { is_disabled: true },
-      });
+      await ctx.editMessageTextWithReact(
+        ctx.callbackQuery.message,
+        <Contenido />,
+        {
+          parse_mode: "HTML",
+          reply_markup: inline_keyboard,
+          link_preview_options: { is_disabled: true },
+        }
+      );
     }
   } else {
-    await ctx.replyWithReact(contenido, {
+    await ctx.replyWithReact(<Contenido />, {
       reply_to_message_id: ctx.callbackQuery?.message?.message_id,
       link_preview_options: { is_disabled: true },
       reply_markup: inline_keyboard,

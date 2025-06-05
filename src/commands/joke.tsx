@@ -3,12 +3,13 @@ import type { CommandConfig } from "../commands.ts";
 export const config: CommandConfig = {
   command: "joke",
   description: "Tell a joke",
-  setup: (bot) => {
-    bot.command("joke", async (ctx) => {
+  compose(composer) {
+    composer.command("joke", async (ctx) => {
       const joke = await fetchJoke();
       await ctx.reply(joke);
     });
-    bot.hears(/chiste|joke/i, async (ctx) => {
+
+    composer.hears(/chiste|joke/i, async (ctx) => {
       const joke = await fetchJoke();
       await ctx.reply(joke, { reply_to_message_id: ctx.message?.message_id });
     });

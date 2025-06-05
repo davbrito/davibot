@@ -7,12 +7,13 @@ import { resolveCommandConfig } from "./manifest.ts";
 type MaybePromise<T> = T | Promise<T>;
 export type SetupFunction = (bot: Bot<AppContextType>) => MaybePromise<void>;
 
-export const AppComposer = Composer<AppContextType>;
+type AppComposer = Composer<AppContextType>;
 
 export interface CommandConfig {
   command: string;
   description: string;
   setup?: SetupFunction;
+  compose?: (composer: AppComposer) => void;
 }
 
 let commandConfigs: CommandConfig[] = [];
@@ -40,8 +41,8 @@ export const setupCommands: SetupFunction = async (bot) => {
           await ctx.sessionManager.clean();
           return ctx.reply("Bye");
         },
-      }
-    )
+      },
+    ),
   );
 
   await bot.api.setMyCommands(
@@ -50,7 +51,7 @@ export const setupCommands: SetupFunction = async (bot) => {
       .map((command) => ({
         command: command.command,
         description: command.description || "",
-      }))
+      })),
   );
 
   async function loadCommandConfigs(): Promise<CommandConfig[]> {
@@ -58,13 +59,16 @@ export const setupCommands: SetupFunction = async (bot) => {
 
     for (const commandKey of Object.keys(manifest.commands)) {
       const command = await resolveCommandConfig(
-        manifest.commands[commandKey as keyof typeof manifest.commands]
+        manifest.commands[commandKey as keyof typeof manifest.commands],
       );
       const config = command.config;
-      const setup = config?.setup;
 
-      if (setup) {
-        await setup(bot);
+      if (config?.setup) {
+        await config.setup(bot);
+      } else if (config?.compose) {
+        const composer = new Composer<AppContextType>();
+        config.compose(composer);
+        bot.use(composer);
       }
 
       if (config) {

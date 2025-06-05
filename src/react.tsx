@@ -27,7 +27,7 @@ export type ReactFlavor = {
 
 export function react<C extends Context>(): MiddlewareFn<C & ReactFlavor> {
   return (ctx, next) => {
-    ctx.renderReactText = (node) => renderToStaticMarkup(<>{node}</>);
+    ctx.renderReactText = (node) => renderToStaticMarkup(node);
 
     ctx.replyWithReact = (node, options, ...args) => {
       const htmlString = ctx.renderReactText(node);
