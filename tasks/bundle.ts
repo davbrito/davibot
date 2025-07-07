@@ -28,7 +28,6 @@ const result = await esbuild.build({
   plugins: [
     ...denoPlugins({
       configPath: fromFileUrl(import.meta.resolve("../deno.json")),
-      loader: "portable",
     }),
   ],
   jsx: "automatic",
