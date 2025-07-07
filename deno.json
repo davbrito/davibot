@@ -46,7 +46,7 @@
   "imports": {
     "$apis": "./apis.gen/mod.ts",
     "$manifest": "./manifest.gen.ts",
-    "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@0.1.52",
+    "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@0.1.49",
     "@grammyjs/hydrate": "https://deno.land/x/grammy_hydrate@v1.4.1/mod.ts",
     "@grammyjs/hydrate/": "https://deno.land/x/grammy_hydrate@v1.4.1/",
     "@grammyjs/router": "https://deno.land/x/grammy_router@v2.0.0/mod.ts",

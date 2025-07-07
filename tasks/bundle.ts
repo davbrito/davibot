@@ -9,7 +9,7 @@ const { MINIFY } = env({
   MINIFY: z.stringbool().default(true),
 });
 
-const entry = fromFileUrl(import.meta.resolve("../src/main.tsx"));
+const entry = import.meta.resolve("../src/main.tsx");
 const outdi = fromFileUrl(import.meta.resolve("../dist/"));
 
 const result = await esbuild.build({
