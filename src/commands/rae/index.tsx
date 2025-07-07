@@ -1,12 +1,6 @@
-import { DOMParser, Element, initParser } from "@b-fuze/deno-dom/wasm-noinit";
+import { DOMParser, Element } from "@b-fuze/deno-dom";
 import { InlineKeyboard, InlineQueryResultBuilder } from "grammy";
-import {
-  Fragment,
-  JSXElementConstructor,
-  ReactElement,
-  ReactNode,
-  ReactPortal,
-} from "react";
+import { Fragment, ReactNode } from "react";
 import type { CommandConfig } from "../../commands.ts";
 import { DbContext } from "../../kv/dbcontext.ts";
 import { AppContextType } from "../../main.tsx";
@@ -24,7 +18,7 @@ export const config: CommandConfig = {
   compose: (bot) => {
     bot.callbackQuery(/^rae-more (.+)$/, async (ctx) => {
       const { palabra, acepcion, pagina, edit } = readKeyboardCallbackQuery(
-        ctx.match[1] || ""
+        ctx.match[1] || "",
       );
 
       await replyMore(ctx, acepcion, pagina, palabra, edit);
@@ -33,7 +27,7 @@ export const config: CommandConfig = {
 
     bot.callbackQuery(/^rae (.+)$/, async (ctx) => {
       const { palabra, acepcion, edit } = readKeyboardCallbackQuery(
-        ctx.match[1] || ""
+        ctx.match[1] || "",
       );
       await replyWithWord({ ctx, palabra, acepcionIndex: acepcion, edit });
       await ctx.answerCallbackQuery();
@@ -48,7 +42,7 @@ export const config: CommandConfig = {
       const palabra = ctx.inlineQuery.query;
 
       const items = await fetch(
-        `https://dle.rae.es/srv/keys?q=${encodeURIComponent(palabra)}`
+        `https://dle.rae.es/srv/keys?q=${encodeURIComponent(palabra)}`,
       )
         .then((r) => r.json() as Promise<string[]>)
         .catch(() => [])
@@ -59,10 +53,10 @@ export const config: CommandConfig = {
           return InlineQueryResultBuilder.article(item, item, {
             reply_markup: new InlineKeyboard().url(
               "🔗",
-              `https://dle.rae.es/${encodeURI(item)}`
+              `https://dle.rae.es/${encodeURI(item)}`,
             ),
           }).text(item);
-        })
+        }),
       );
     });
 
@@ -82,9 +76,8 @@ export const config: CommandConfig = {
 
 const getParser = (() => {
   let parser: DOMParser | undefined;
-  return async function getParser() {
+  return function getParser() {
     if (!parser) {
-      await initParser();
       parser = new DOMParser();
     }
     return parser;
@@ -137,7 +130,7 @@ async function replyWithWord({
     for (const { word, label } of sugerencias) {
       inline_keyboard.text(
         label,
-        makeKeyboardCallbackQuery("rae", { palabra: word!, acepcion: 0 })
+        makeKeyboardCallbackQuery("rae", { palabra: word!, acepcion: 0 }),
       );
     }
 
@@ -148,7 +141,7 @@ async function replyWithWord({
       {
         reply_to_message_id: ctx.message?.message_id,
         reply_markup: inline_keyboard,
-      }
+      },
     );
     return;
   }
@@ -165,7 +158,7 @@ async function replyWithWord({
           acepcion: index,
           palabra: palabra,
           edit: true,
-        })
+        }),
       );
     });
   }
@@ -178,7 +171,7 @@ async function replyWithWord({
       makeKeyboardCallbackQuery("rae-more", {
         acepcion: acepcionIndex,
         palabra,
-      })
+      }),
     );
   }
 
@@ -205,7 +198,7 @@ async function replyWithWord({
     await ctx.api.editMessageTextInline(
       editInlineMessageId,
       htmlContent,
-      commonOptions
+      commonOptions,
     );
   } else if (edit) {
     if (ctx.callbackQuery?.message) {
@@ -259,7 +252,7 @@ async function replyMore(
   acepcionIndex: number,
   page: number,
   palabra: string | undefined,
-  isEdit: boolean
+  isEdit: boolean,
 ) {
   if (!palabra) {
     await ctx.reply("Por favor, introduce una palabra");
@@ -289,7 +282,7 @@ async function replyMore(
     acepcionIndex,
     page,
     palabra,
-    pageCount
+    pageCount,
   );
 
   const Contenido = () => (
@@ -324,7 +317,7 @@ async function replyMore(
           parse_mode: "HTML",
           reply_markup: inline_keyboard,
           link_preview_options: { is_disabled: true },
-        }
+        },
       );
     }
   } else {
@@ -360,7 +353,7 @@ async function fetchWord({
   const resultados = doc.getElementById("resultados");
 
   const acepciones = Array.from(
-    resultados?.querySelectorAll(ACEPTION_SELECTOR) ?? []
+    resultados?.querySelectorAll(ACEPTION_SELECTOR) ?? [],
   );
 
   const acepcion = acepciones[acepcionIndex] || acepciones[0];
@@ -380,7 +373,7 @@ async function fetchWord({
             word: word,
             label: sugerencia.textContent,
           };
-        }
+        },
       ),
     };
   }
@@ -389,7 +382,7 @@ async function fetchWord({
     acepcion.querySelectorAll("[class^=j]"),
     (acepcion, index) => {
       const itemFooter = acepcion.querySelector(
-        DEFINITION_ITEM_FOOTER_SELECTOR
+        DEFINITION_ITEM_FOOTER_SELECTOR,
       );
       itemFooter?.remove();
       itemFooter?.querySelectorAll(".c-word-list").forEach((node, index) => {
@@ -404,7 +397,7 @@ async function fetchWord({
       itemFooter?.querySelectorAll(".sin").forEach((x) => {
         const a = doc.createElement("a");
         const url = `https://t.me/${encodeURIComponent(
-          botUserName
+          botUserName,
         )}?text=${encodeURIComponent(`/rae ${x.textContent}`)}`;
         a.setAttribute("href", url);
 
@@ -429,7 +422,7 @@ async function fetchWord({
           )}
         </Fragment>
       );
-    }
+    },
   );
 
   const more = Array.from(
@@ -444,24 +437,24 @@ async function fetchWord({
             expandAbbreviations: false,
             italicSelectors: ["abbr.c", ".h"],
             boldSelectors: [".n_acep", ".u"],
-          })
+          }),
         );
       }
       return { title, acepciones };
-    }
+    },
   );
 
   return {
     url,
     word,
     etimologia: reformatNodeList(
-      acepcion.querySelector(ETIMOLOGY_SELECTOR)?.childNodes
+      acepcion.querySelector(ETIMOLOGY_SELECTOR)?.childNodes,
     ),
     definiciones: definiciones,
     more,
     hasMore: !!more.length,
     acepciones: acepciones.map(
-      (acepcion) => acepcion.querySelector(TITLE_SELECTOR)?.textContent ?? ""
+      (acepcion) => acepcion.querySelector(TITLE_SELECTOR)?.textContent ?? "",
     ),
   };
 }
