@@ -4,9 +4,17 @@ import * as esbuild from "esbuild";
 import denoConfig from "../deno.json" with { type: "json" };
 import { z } from "zod";
 import { env } from "../lib/env.ts";
+import { parseArgs } from "@std/cli/parse-args";
 
 const { MINIFY } = env({
   MINIFY: z.stringbool().default(true),
+});
+
+const { minify } = parseArgs(Deno.args, {
+  boolean: ["minify"],
+  default: {
+    minify: MINIFY,
+  },
 });
 
 const entry = import.meta.resolve("../src/main.tsx");
@@ -20,12 +28,13 @@ const result = await esbuild.build({
   plugins: [
     ...denoPlugins({
       configPath: fromFileUrl(import.meta.resolve("../deno.json")),
+      loader: "portable",
     }),
   ],
   jsx: "automatic",
   jsxImportSource: denoConfig.compilerOptions.jsxImportSource,
   bundle: true,
-  minify: MINIFY,
+  minify: minify,
   sourcemap: true,
   treeShaking: true,
   metafile: true,
