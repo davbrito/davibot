@@ -3,7 +3,7 @@ import { FixedChunkStream } from "@std/streams/unstable-fixed-chunk-stream";
 import { DbContext } from "./dbcontext.ts";
 
 const MAX_BYTE_SIZE = 65_536;
-const DELIMITER = 0xdabd;
+const CACHE_EXPIRE_TIME = 1000 * 60 * 60 * 24; // 24 hours
 
 export class RaeRepository {
   constructor(private readonly db: DbContext) {}
@@ -11,23 +11,13 @@ export class RaeRepository {
   async #getFromCache(word: string) {
     try {
       const kv = await this.db.getKv();
-      const list = kv.list<Uint8Array | typeof DELIMITER>({
-        prefix: ["rae-cache", word],
-      });
+      const list = kv.list<Uint8Array>({ prefix: ["rae-cache", word] });
+
       const stream = ReadableStream.from(list)
         .pipeThrough(
           toTransformStream(async function* (stream) {
-            let last;
             for await (const { value } of stream) {
-              last = value;
-              if (value === DELIMITER) break;
               yield value;
-            }
-
-            if (!last) return;
-
-            if (last === DELIMITER) {
-              throw new Error("Cache is corrupted");
             }
           }),
         )
@@ -52,13 +42,10 @@ export class RaeRepository {
         op.delete(key);
       }
 
-      for await (
-        const chunk of value.pipeThrough(
-          new FixedChunkStream(MAX_BYTE_SIZE),
-        )
-      ) {
+      value = value.pipeThrough(new FixedChunkStream(MAX_BYTE_SIZE));
+      for await (const chunk of value) {
         op.set(["rae-cache", word, i++], chunk, {
-          expireIn: 1000 * 60 * 60 * 24,
+          expireIn: CACHE_EXPIRE_TIME,
         });
       }
       await op.commit();
