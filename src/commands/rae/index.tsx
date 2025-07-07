@@ -1,4 +1,4 @@
-import { DOMParser, Element } from "@b-fuze/deno-dom";
+import { DOMParser, Element, initParser } from "@b-fuze/deno-dom/wasm-noinit";
 import { InlineKeyboard, InlineQueryResultBuilder } from "grammy";
 import { Fragment, ReactNode } from "react";
 import type { CommandConfig } from "../../commands.ts";
@@ -76,8 +76,9 @@ export const config: CommandConfig = {
 
 const getParser = (() => {
   let parser: DOMParser | undefined;
-  return function getParser() {
+  return async function getParser() {
     if (!parser) {
+      await initParser();
       parser = new DOMParser();
     }
     return parser;
