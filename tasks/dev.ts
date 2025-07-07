@@ -17,32 +17,36 @@ const dotenv = await load().then((e) =>
     .parse({
       ...e,
       ...Deno.env.toObject(),
-    })
+    }),
 );
 
 async function createConfigsManifest(): Promise<string> {
   const commandsPath = path.join(sourcePath, "commands");
 
-  const commandFilenames = await Array.fromAsync(iasync.map(
-    iasync.concat(
-      fs.expandGlob("*.{ts,tsx}", {
-        root: commandsPath,
-        includeDirs: false,
-      }),
-      fs.expandGlob("*/index.{ts,tsx}", {
-        root: commandsPath,
-        includeDirs: false,
-      }),
+  const commandFilenames = await Array.fromAsync(
+    iasync.map(
+      iasync.concat(
+        fs.expandGlob("*.{ts,tsx}", {
+          root: commandsPath,
+          includeDirs: false,
+        }),
+        fs.expandGlob("*/index.{ts,tsx}", {
+          root: commandsPath,
+          includeDirs: false,
+        }),
+      ),
+      (x) => relative(commandsPath, x.path),
     ),
-    (x) => relative(commandsPath, x.path),
-  ));
+  );
 
   const commandEntries: string[] = [];
 
   for (const commandPath of commandFilenames) {
-    const key = path.basename(commandPath).replace(/\.[^/.]+$/, "");
-    const commandValue = `_lazy(() => import("./src/commands/${commandPath}"))`;
-    commandEntries.push(`"${key}": ${commandValue}`);
+    const stem = path.basename(commandPath, path.extname(commandPath));
+    const commandName = stem === "index" ? path.dirname(commandPath) : stem;
+    const commandPathNormalized = commandPath.replace(path.SEPARATOR, "/");
+    const commandValue = `_lazy(() => import("./src/commands/${commandPathNormalized}"))`;
+    commandEntries.push(`"${commandName}": ${commandValue}`);
   }
 
   return `
