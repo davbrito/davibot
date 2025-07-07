@@ -3,12 +3,11 @@ import { fromFileUrl } from "@std/path";
 import * as esbuild from "esbuild";
 import denoConfig from "../deno.json" with { type: "json" };
 import { z } from "zod";
+import { env } from "../lib/env.ts";
 
-const { MINIFY } = z.object({
+const { MINIFY } = env({
   MINIFY: z.stringbool().default(true),
-}).parse(
-  Deno.env.toObject(),
-);
+});
 
 const entry = fromFileUrl(import.meta.resolve("../src/main.tsx"));
 const outdi = fromFileUrl(import.meta.resolve("../dist/"));
