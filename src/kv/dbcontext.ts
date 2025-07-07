@@ -40,4 +40,13 @@ export class DbContext {
   [Symbol.dispose]() {
     this.#kv?.close();
   }
+
+  static use<T>(fn: (db: DbContext) => T): T {
+    using db = new DbContext();
+    return fn(db);
+  }
+
+  static clearCache(): Promise<void> {
+    return this.use((db) => db.clearCache());
+  }
 }
