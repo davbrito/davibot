@@ -60,28 +60,24 @@ export class SessionManager {
 
 class KvAdapter<T> implements StorageAdapter<T> {
   async read(key: string): Promise<T | undefined> {
-    return await DbContext.use(async (db) => {
-      const data = await db.get<T>(["session", key]);
-      return data.value ? data.value : undefined;
-    });
+    using db = new DbContext();
+    const data = await db.get<T>(["session", key]);
+    return data.value ? data.value : undefined;
   }
   async write(key: string, value: T): Promise<void> {
-    await DbContext.use(async (db) => {
-      await db.set(["session", key], value);
-    });
+    using db = new DbContext();
+    await db.set(["session", key], value);
   }
 
   async delete(key: string): Promise<void> {
-    await DbContext.use(async (db) => {
-      await db.delete(["session", key]);
-    });
+    using db = new DbContext();
+    await db.delete(["session", key]);
   }
 
   async has(key: string): Promise<boolean> {
-    return await DbContext.use(async (db) => {
-      const data = await db.get<T>(["session", key]);
-      return Boolean(data.value);
-    });
+    using db = new DbContext();
+    const data = await db.get<T>(["session", key]);
+    return Boolean(data.value);
   }
   async *readAllKeys(): AsyncIterable<string> {
     using db = new DbContext();

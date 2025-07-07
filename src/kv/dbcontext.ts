@@ -40,13 +40,4 @@ export class DbContext {
   [Symbol.dispose]() {
     this.#kv?.close();
   }
-
-  static async use<T>(callback: (db: DbContext) => Promise<T>) {
-    const db = new DbContext();
-    try {
-      return await callback(db);
-    } finally {
-      db[Symbol.dispose]();
-    }
-  }
 }
