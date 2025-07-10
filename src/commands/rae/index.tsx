@@ -3,7 +3,7 @@ import { InlineKeyboard, InlineQueryResultBuilder } from "grammy";
 import { Fragment, ReactNode } from "react";
 import type { CommandConfig } from "../../commands.ts";
 import { DbContext } from "../../kv/dbcontext.ts";
-import { AppContextType } from "../../main.tsx";
+import { AppContextType } from "../../context.ts";
 import { reformatNode, reformatNodeList } from "./dom.tsx";
 import {
   createInlineKeyboardPagination,

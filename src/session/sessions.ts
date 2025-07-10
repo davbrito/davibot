@@ -6,9 +6,9 @@ import {
   StorageAdapter,
 } from "grammy";
 import { z } from "zod";
+import { DbContext } from "../kv/dbcontext.ts";
+import type { AppContextType } from "../context.ts";
 import { HiSession } from "./hi-session.ts";
-import { DbContext } from "./kv/dbcontext.ts";
-import { AppContextType } from "./main.tsx";
 
 const sessionDataSchema = z.looseObject({
   hiRequestId: z.number().nullable(),

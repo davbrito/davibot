@@ -1,7 +1,6 @@
 import manifest from "$manifest";
 import { Bot, Composer } from "grammy";
-import { Router } from "@grammyjs/router";
-import type { AppContextType } from "./main.tsx";
+import type { AppContextType } from "./context.ts";
 import { resolveCommandConfig } from "./manifest.ts";
 
 type MaybePromise<T> = T | Promise<T>;
@@ -31,19 +30,12 @@ export const setupCommands: SetupFunction = async (bot) => {
     ...(await loadCommandConfigs()),
   ];
 
-  bot.on(
-    "message::bot_command",
-    new Router<AppContextType>(
-      (ctx) => ctx.message?.text?.match(/^\/(\w+)/)?.[1],
-      {
-        about: (ctx) => ctx.reply("Author: @" + manifest.author),
-        end: async (ctx) => {
-          await ctx.sessionManager.clean();
-          return ctx.reply("Bye");
-        },
-      },
-    ),
-  );
+  bot.command("about", (ctx) => ctx.reply("Author: @" + manifest.author));
+
+  bot.command("end", async (ctx) => {
+    await ctx.sessionManager.clean();
+    await ctx.reply("Bye");
+  });
 
   await bot.api.setMyCommands(
     commandConfigs

@@ -26,9 +26,9 @@ const result = await esbuild.build({
   target: "deno2.3",
   outdir: outdi,
   plugins: [
-    ...denoPlugins({
+    ...(denoPlugins({
       configPath: fromFileUrl(import.meta.resolve("../deno.json")),
-    }),
+    }) as esbuild.Plugin[]),
   ],
   jsx: "automatic",
   jsxImportSource: denoConfig.compilerOptions.jsxImportSource,

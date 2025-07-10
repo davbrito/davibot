@@ -1,24 +1,16 @@
-import { type HydrateFlavor, hydrate } from "@grammyjs/hydrate/mod.ts";
+import { hydrate } from "@grammyjs/hydrate/mod.ts";
 import { sample } from "@std/random";
-import { Bot, Context } from "grammy";
+import { Bot } from "grammy";
+import { AppContextType } from "./context.ts";
 import { setupCommands } from "./commands.ts";
 import { BOT_SECRET, BOT_TOKEN, runAsWebhook } from "./config.ts";
 import { DbContext } from "./kv/dbcontext.ts";
-import { DbFlavor, withDb } from "./kv/middleware.ts";
-import { ApisFlavor, withApis } from "./middlewares/apis.ts";
-import { react, ReactFlavor } from "./react.tsx";
-import { SessionManager, SessionManagerFlavor } from "./sessions.ts";
+import { withDb } from "./kv/middleware.ts";
+import { withApis } from "./middlewares/apis.ts";
+import { react } from "./react.tsx";
+import { SessionManager } from "./session/sessions.ts";
 import { logStart, measureDuration } from "./utils.ts";
 import { serveWebhook } from "./webhook.ts";
-
-interface BaseAppContextType
-  extends Context,
-    SessionManagerFlavor,
-    ReactFlavor,
-    ApisFlavor,
-    DbFlavor {}
-
-export type AppContextType = HydrateFlavor<BaseAppContextType>;
 
 async function main() {
   console.log("Starting bot...");
@@ -38,12 +30,12 @@ async function main() {
     withDb(),
     hydrate(),
     react(),
-    SessionManager.middleware()
+    SessionManager.middleware(),
   );
 
   await setupCommands(bot);
 
-  bot.on("message:text").hears(/xd|jsjsjs/i, async (ctx) => {
+  bot.on("message:text").hears(/xd|(js)+|(ha(ha)+)/i, async (ctx) => {
     await ctx.reply("xD", { reply_to_message_id: ctx.message.message_id });
   });
 
@@ -91,13 +83,13 @@ async function main() {
   bot.on("edited_message", (ctx) =>
     ctx.reply("Ajá! Uldepasao! Editaste eto!", {
       reply_to_message_id: ctx.editedMessage.message_id,
-    })
+    }),
   );
 
   bot.catch((error) => {
     console.error(
       'Error caught in "bot.catch":',
-      String(error) + "\n" + error.stack
+      String(error) + "\n" + error.stack,
     );
   });
 

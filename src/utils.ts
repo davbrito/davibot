@@ -1,7 +1,7 @@
 import { Bot } from "grammy";
 import { brightBlack, dim, green } from "@std/fmt/colors";
 import { BOT_TOKEN } from "./config.ts";
-import type { AppContextType } from "./main.tsx";
+import type { AppContextType } from "./context.ts";
 
 export * from "./markdown.ts";
 
