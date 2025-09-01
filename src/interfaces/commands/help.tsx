@@ -1,4 +1,4 @@
-import { CommandConfig, getCommandConfigs } from "../commands.ts";
+import { CommandConfig, getCommandConfigs } from "../../commands.ts";
 
 function getHelpContent() {
   return getCommandConfigs()

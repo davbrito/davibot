@@ -1,4 +1,4 @@
-import { CommandConfig } from "../commands.ts";
+import { CommandConfig } from "../../commands.ts";
 import { parseArgs } from "@std/cli";
 
 export const config: CommandConfig = {
@@ -27,9 +27,9 @@ export const config: CommandConfig = {
       if (!knownFormats.includes(options.format)) {
         await ctx.reply(
           `Formato desconhecido. Formatos suportados: ${knownFormats.join(
-            ", "
+            ", ",
           )}`,
-          { reply_to_message_id: msg_id }
+          { reply_to_message_id: msg_id },
         );
       } else if (!imageFormats.includes(options.format)) {
         const linkEmoji = String.fromCodePoint(0x1f517);

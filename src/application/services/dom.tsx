@@ -10,7 +10,7 @@ interface ReformatNodeOptions {
 
 export function reformatNode(
   node: Node,
-  ops: ReformatNodeOptions = {}
+  ops: ReformatNodeOptions = {},
 ): ReactNode {
   const {
     expandAbbreviations = true,
@@ -48,11 +48,11 @@ export function reformatNode(
   }
 
   const isItalic = italicSelectors?.some((selector) =>
-    element.matches(selector)
+    element.matches(selector),
   );
   const isBold = boldSelectors?.some((selector) => element.matches(selector));
   const isUnderline = underlineSelectors?.some((selector) =>
-    element.matches(selector)
+    element.matches(selector),
   );
 
   const result: ReactNode = (() => {
@@ -80,7 +80,7 @@ export function reformatNode(
 
 export function reformatNodeList(
   nodes: Iterable<Node> | null | undefined,
-  ops: ReformatNodeOptions = {}
+  ops: ReformatNodeOptions = {},
 ): ReactNode {
   if (!nodes) return null;
 

@@ -1,4 +1,4 @@
-import { CommandConfig } from "../commands.ts";
+import { CommandConfig } from "../../commands.ts";
 
 export const config: CommandConfig = {
   command: "xkcd",

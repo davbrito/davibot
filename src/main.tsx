@@ -1,11 +1,11 @@
+import { DbContext } from "$infrastructure/kv/dbcontext.ts";
+import { withDb } from "$infrastructure/kv/middleware.ts";
 import { hydrate } from "@grammyjs/hydrate/mod.ts";
 import { sample } from "@std/random";
 import { Bot } from "grammy";
-import { AppContextType } from "./context.ts";
 import { setupCommands } from "./commands.ts";
 import { BOT_SECRET, BOT_TOKEN, runAsWebhook } from "./config.ts";
-import { DbContext } from "./kv/dbcontext.ts";
-import { withDb } from "./kv/middleware.ts";
+import { AppContextType } from "./context.ts";
 import { withApis } from "./middlewares/apis.ts";
 import { react } from "./react.tsx";
 import { SessionManager } from "./session/sessions.ts";
@@ -96,6 +96,9 @@ async function main() {
   if (runAsWebhook) {
     await serveWebhook(bot, BOT_SECRET);
   } else {
+    const botInfo = await bot.api.getMe();
+    console.log("Bot info:", botInfo);
+
     await bot.start({
       onStart: (info) => {
         DbContext.use((db) => db.botInfo.set(info));

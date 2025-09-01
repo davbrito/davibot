@@ -10,8 +10,7 @@ export class RaeRepository {
 
   async #getFromCache(word: string) {
     try {
-      const kv = await this.db.getKv();
-      const list = kv.list<Uint8Array>({ prefix: ["rae-cache", word] });
+      const list = this.db.kv.list<Uint8Array>({ prefix: ["rae-cache", word] });
 
       const stream = ReadableStream.from(list)
         .pipeThrough(
@@ -34,7 +33,7 @@ export class RaeRepository {
     await Promise.resolve();
     try {
       let i = 0;
-      const kv = await this.db.getKv();
+      const kv = this.db.kv;
 
       const op = kv.atomic();
 
@@ -66,7 +65,7 @@ export class RaeRepository {
   }
 
   async clearCache() {
-    const kv = await this.db.getKv();
+    const kv = this.db.kv;
     const op = kv.atomic();
 
     for await (const { key } of kv.list({ prefix: ["rae-cache"] })) {

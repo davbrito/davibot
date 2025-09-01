@@ -1,4 +1,4 @@
-import type { CommandConfig } from "../commands.ts";
+import type { CommandConfig } from "../../commands.ts";
 
 export const config: CommandConfig = {
   command: "joke",

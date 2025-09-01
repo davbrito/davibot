@@ -21,7 +21,7 @@ const dotenv = await load().then((e) =>
 );
 
 async function createConfigsManifest(): Promise<string> {
-  const commandsPath = path.join(sourcePath, "commands");
+  const commandsPath = path.join(sourcePath, "interfaces", "commands");
 
   const commandFilenames = await Array.fromAsync(
     iasync.map(
@@ -45,7 +45,7 @@ async function createConfigsManifest(): Promise<string> {
     const stem = path.basename(commandPath, path.extname(commandPath));
     const commandName = stem === "index" ? path.dirname(commandPath) : stem;
     const commandPathNormalized = commandPath.replace(path.SEPARATOR, "/");
-    const commandValue = `_lazy(() => import("./src/commands/${commandPathNormalized}"))`;
+    const commandValue = `_lazy(() => import("./src/interfaces/commands/${commandPathNormalized}"))`;
     commandEntries.push(`"${commandName}": ${commandValue}`);
   }
 

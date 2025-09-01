@@ -1,3 +1,4 @@
+import { DbContext } from "$infrastructure/kv/dbcontext.ts";
 import {
   Composer,
   enhanceStorage,
@@ -6,7 +7,6 @@ import {
   StorageAdapter,
 } from "grammy";
 import { z } from "zod";
-import { DbContext } from "../kv/dbcontext.ts";
 import type { AppContextType } from "../context.ts";
 import { HiSession } from "./hi-session.ts";
 
@@ -58,53 +58,36 @@ export class SessionManager {
   }
 }
 
-class KvAdapter<T> implements StorageAdapter<T> {
-  async read(key: string): Promise<T | undefined> {
-    using db = new DbContext();
-    const data = await db.get<T>(["session", key]);
-    return data.value ? data.value : undefined;
+class KvAdapter implements StorageAdapter<any> {
+  read(key: string): Promise<any | undefined> {
+    return DbContext.use((db) => db.session.getSession(key));
   }
-  async write(key: string, value: T): Promise<void> {
-    using db = new DbContext();
-    await db.set(["session", key], value);
+  write(key: string, value: any): Promise<void> {
+    return DbContext.use((db) => db.session.setSession(key, value));
   }
 
-  async delete(key: string): Promise<void> {
-    using db = new DbContext();
-    await db.delete(["session", key]);
+  delete(key: string): Promise<void> {
+    return DbContext.use((db) => db.session.deleteSession(key));
   }
 
-  async has(key: string): Promise<boolean> {
-    using db = new DbContext();
-    const data = await db.get<T>(["session", key]);
-    return Boolean(data.value);
+  has(key: string): Promise<boolean> {
+    return DbContext.use((db) => db.session.getSession(key)).then(Boolean);
   }
   async *readAllKeys(): AsyncIterable<string> {
-    using db = new DbContext();
-    const kv = await db.getKv();
-
-    for await (const { key } of kv.list({ prefix: ["session"] })) {
-      yield key[1] as string;
+    using db = await DbContext.connect();
+    for await (const [key] of db.session.listSessions()) {
+      yield key;
     }
   }
-  async *readAllValues(): AsyncIterable<T> {
-    using db = new DbContext();
-    const kv = await db.getKv();
+  async *readAllValues(): AsyncIterable<any> {
+    using db = await DbContext.connect();
 
-    for await (const { value } of kv.list<T>({
-      prefix: ["session"],
-    })) {
+    for await (const [_, value] of db.session.listSessions()) {
       yield value;
     }
   }
-  async *readAllEntries(): AsyncIterable<[key: string, value: T]> {
-    using db = new DbContext();
-    const kv = await db.getKv();
-
-    for await (const { key, value } of kv.list<T>({
-      prefix: ["session"],
-    })) {
-      yield [key[1] as string, value];
-    }
+  async *readAllEntries(): AsyncIterable<[key: string, value: any]> {
+    using db = await DbContext.connect();
+    yield* db.session.listSessions();
   }
 }

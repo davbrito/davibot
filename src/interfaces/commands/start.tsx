@@ -1,5 +1,5 @@
-import { CommandConfig } from "../commands.ts";
-import { bold } from "../utils.ts";
+import { CommandConfig } from "../../commands.ts";
+import { bold } from "../../utils.ts";
 
 export const config: CommandConfig = {
   command: "start",

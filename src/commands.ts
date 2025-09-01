@@ -2,6 +2,8 @@ import manifest from "$manifest";
 import { Bot, Composer } from "grammy";
 import type { AppContextType } from "./context.ts";
 import { resolveCommandConfig } from "./manifest.ts";
+import { retry } from "@std/async/retry";
+import { errorBoundary } from "$interfaces/middlewares/error-handler.middleware.tsx";
 
 type MaybePromise<T> = T | Promise<T>;
 export type SetupFunction = (bot: Bot<AppContextType>) => MaybePromise<void>;
@@ -18,6 +20,7 @@ export interface CommandConfig {
 let commandConfigs: CommandConfig[] = [];
 
 export const setupCommands: SetupFunction = async (bot) => {
+  const composer = new Composer<AppContextType>();
   commandConfigs = [
     {
       command: "about",
@@ -30,21 +33,35 @@ export const setupCommands: SetupFunction = async (bot) => {
     ...(await loadCommandConfigs()),
   ];
 
-  bot.command("about", (ctx) => ctx.reply("Author: @" + manifest.author));
+  composer.command("about", (ctx) => ctx.reply("Author: @" + manifest.author));
 
-  bot.command("end", async (ctx) => {
+  composer.command("end", async (ctx) => {
     await ctx.sessionManager.clean();
     await ctx.reply("Bye");
   });
 
-  await bot.api.setMyCommands(
-    commandConfigs
-      .filter((command) => command.command)
-      .map((command) => ({
-        command: command.command,
-        description: command.description || "",
-      })),
-  );
+  bot.errorBoundary(errorBoundary).use(composer);
+
+  retry(
+    () =>
+      bot.api.setMyCommands(
+        commandConfigs
+          .filter((command) => command.command)
+          .map((command) => ({
+            command: command.command,
+            description: command.description || "",
+          })),
+      ),
+    {
+      maxAttempts: 3,
+    },
+  )
+    .then(() => {
+      console.log("Commands set up successfully");
+    })
+    .catch((err) => {
+      console.error("Error setting up commands:", err);
+    });
 
   async function loadCommandConfigs(): Promise<CommandConfig[]> {
     const commands: CommandConfig[] = [];
@@ -58,9 +75,7 @@ export const setupCommands: SetupFunction = async (bot) => {
       if (config?.setup) {
         await config.setup(bot);
       } else if (config?.compose) {
-        const composer = new Composer<AppContextType>();
         config.compose(composer);
-        bot.use(composer);
       }
 
       if (config) {

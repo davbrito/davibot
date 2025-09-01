@@ -1,9 +1,9 @@
+import { DbContext } from "$infrastructure/kv/dbcontext.ts";
 import { green } from "@std/fmt/colors";
 import { route } from "@std/http/unstable-route";
 import { Bot, webhookCallback } from "grammy";
 import type { AppContextType } from "./context.ts";
 import { logStart, measureDuration } from "./utils.ts";
-import { DbContext } from "./kv/dbcontext.ts";
 
 export async function serveWebhook(
   bot: Bot<AppContextType>,

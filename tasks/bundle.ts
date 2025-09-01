@@ -23,7 +23,7 @@ const outdi = fromFileUrl(import.meta.resolve("../dist/"));
 const result = await esbuild.build({
   entryPoints: [entry],
   format: "esm",
-  target: "deno2.3",
+  target: "deno2.4",
   outdir: outdi,
   plugins: [
     ...(denoPlugins({
@@ -43,3 +43,5 @@ await Deno.writeTextFile(
   fromFileUrl(import.meta.resolve("../dist/metafile.json")),
   JSON.stringify(result.metafile, null, 2),
 );
+
+esbuild.stop();
