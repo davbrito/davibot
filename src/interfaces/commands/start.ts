@@ -1,5 +1,5 @@
 import type { CommandConfig } from "$infrastructure/commands.ts";
-import { bold } from "../../utils.ts";
+import { bold } from "../helpers/markdown.ts";
 
 export const config: CommandConfig = {
   name: "start",

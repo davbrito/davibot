@@ -11,6 +11,7 @@ import { BOT_SECRET, BOT_TOKEN, runAsWebhook } from "./config.ts";
 import { AppContextType } from "./context.ts";
 import { SessionManager } from "./session/sessions.ts";
 import { logStart } from "./utils.ts";
+import manifest from "$manifest";
 
 async function main() {
   console.log("Starting bot...");
@@ -34,6 +35,10 @@ async function main() {
     hydrate(),
     react(),
     SessionManager.middleware(),
+    (ctx, next) => {
+      ctx.isOwner = ctx.from?.username === manifest.author;
+      return next();
+    },
   );
 
   await setupCommands(new Composer(), bot);

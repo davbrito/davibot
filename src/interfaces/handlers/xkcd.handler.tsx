@@ -4,6 +4,7 @@ import {
   comicSchema,
   createXkcdResponse,
 } from "../helpers/xkcd-response.helper.tsx";
+import { codeBlock } from "../helpers/markdown.ts";
 
 const idRegex = /^\d+$/;
 
@@ -22,15 +23,19 @@ async function loaderMessage(
 ) {
   let messagePromise: ReturnType<typeof ctx.reply> | null = null;
 
-  const updateMessage = async (message: string) => {
+  const updateMessage = async (message: string, md?: boolean) => {
     if (!messagePromise) {
-      messagePromise = ctx.reply(message);
+      messagePromise = ctx.reply(message, {
+        parse_mode: md ? "MarkdownV2" : undefined,
+      });
       await messagePromise;
       return;
     }
 
     const msg = await messagePromise;
-    await msg.editText(message);
+    await msg.editText(message, {
+      parse_mode: md ? "MarkdownV2" : undefined,
+    });
   };
 
   const deleteMessage = async () => {
@@ -46,7 +51,13 @@ async function loaderMessage(
     deleteMessage();
   } catch (exc) {
     onError?.(exc);
-    await updateMessage(error);
+    let message = error;
+
+    if (ctx.isOwner) {
+      message += `\n\n\`${codeBlock(String(exc))}\``;
+    }
+
+    await updateMessage(message);
   }
 }
 

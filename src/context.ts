@@ -10,6 +10,8 @@ interface BaseAppContextType
     SessionManagerFlavor,
     ReactFlavor,
     ApisFlavor,
-    DbFlavor {}
+    DbFlavor {
+  isOwner: boolean;
+}
 
 export type AppContextType = HydrateFlavor<BaseAppContextType>;

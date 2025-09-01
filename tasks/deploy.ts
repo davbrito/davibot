@@ -1,12 +1,11 @@
 import "@std/dotenv/load";
 import { z } from "zod";
+import { env } from "../lib/env.ts";
 
-const { DENO_DEPLOY_TOKEN, DENO_DEPLOY_PROJECT } = z
-  .object({
-    DENO_DEPLOY_TOKEN: z.string().min(1),
-    DENO_DEPLOY_PROJECT: z.string().min(1),
-  })
-  .parse(Deno.env.toObject());
+const { DENO_DEPLOY_TOKEN, DENO_DEPLOY_PROJECT } = env({
+  DENO_DEPLOY_TOKEN: z.string().min(1),
+  DENO_DEPLOY_PROJECT: z.string().min(1),
+});
 
 const command = new Deno.Command("deployctl", {
   args: [

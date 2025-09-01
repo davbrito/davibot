@@ -3,8 +3,6 @@ import { brightBlack, dim, green } from "@std/fmt/colors";
 import { BOT_TOKEN } from "./config.ts";
 import type { AppContextType } from "./context.ts";
 
-export * from "$interfaces/helpers/markdown.ts";
-
 export async function logStart(bot: Bot<AppContextType>, addr?: Deno.NetAddr) {
   await bot.init();
   console.log(

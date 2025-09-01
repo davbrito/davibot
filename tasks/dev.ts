@@ -4,20 +4,20 @@ import * as path from "@std/path";
 import * as iasync from "iteretijs/async";
 import { z } from "zod";
 import denoJson from "../deno.json" with { type: "json" };
+import { env } from "../lib/env.ts";
 import { generateApis } from "./apis.ts";
 import { manifestPath, sourcePath } from "./constants.ts";
 import { formatCode } from "./utils.ts";
 
-const dotenv = await load().then((e) =>
-  z
-    .object({
-      AUTHOR: z.string(),
-      RESTRICTIONS: z.string().optional(),
-    })
-    .parse({
-      ...e,
-      ...Deno.env.toObject(),
-    }),
+const dotenv = env(
+  {
+    AUTHOR: z.string(),
+    RESTRICTIONS: z.string().optional(),
+  },
+  {
+    ...(await load()),
+    ...Deno.env.toObject(),
+  },
 );
 
 async function createConfigsManifest(): Promise<string> {
