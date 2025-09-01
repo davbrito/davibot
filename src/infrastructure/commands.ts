@@ -4,6 +4,7 @@ import { sample } from "@std/random";
 import { Bot, Composer } from "grammy";
 import { AppContextType } from "../context.ts";
 import { resolveCommandConfig } from "../manifest.ts";
+import { codeBlock } from "$interfaces/helpers/markdown.ts";
 
 type MaybePromise<T> = T | Promise<T>;
 export type SetupFunction = (
@@ -35,6 +36,18 @@ export const setupCommands: SetupFunction = async (composer, bot) => {
   ];
 
   composer.command("about", (ctx) => ctx.reply("Author: @" + manifest.author));
+
+  composer.command("build-info", (ctx, next) => {
+    if (ctx.from?.username === manifest.author) {
+      ctx.reply(
+        "Build info:\n" +
+          codeBlock(JSON.stringify(manifest.buildMetadata), "json"),
+        { parse_mode: "MarkdownV2" },
+      );
+    } else {
+      return next();
+    }
+  });
 
   composer.command("end", async (ctx) => {
     await ctx.sessionManager.clean();

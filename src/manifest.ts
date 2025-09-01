@@ -20,6 +20,7 @@ export interface ManifestSchema {
     [key: string]: SetupFunction<CommandModule>;
   };
   restrictions?: Restrictions;
+  buildMetadata?: Record<string, unknown>;
 }
 
 export async function resolveCommandConfig<T extends CommandModule>(
