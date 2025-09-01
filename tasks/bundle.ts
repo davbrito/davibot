@@ -1,10 +1,7 @@
-import { denoPlugins } from "@luca/esbuild-deno-loader";
+import { parseArgs } from "@std/cli/parse-args";
 import { fromFileUrl } from "@std/path";
-import * as esbuild from "esbuild";
-import denoConfig from "../deno.json" with { type: "json" };
 import { z } from "zod";
 import { env } from "../lib/env.ts";
-import { parseArgs } from "@std/cli/parse-args";
 
 const { MINIFY } = env({
   MINIFY: z.stringbool().default(true),
@@ -20,28 +17,25 @@ const { minify } = parseArgs(Deno.args, {
 const entry = import.meta.resolve("../src/main.tsx");
 const outdi = fromFileUrl(import.meta.resolve("../dist/"));
 
-const result = await esbuild.build({
-  entryPoints: [entry],
-  format: "esm",
-  target: "deno2.4",
-  outdir: outdi,
-  plugins: [
-    ...(denoPlugins({
-      configPath: fromFileUrl(import.meta.resolve("../deno.json")),
-    }) as esbuild.Plugin[]),
-  ],
-  jsx: "automatic",
-  jsxImportSource: denoConfig.compilerOptions.jsxImportSource,
-  bundle: true,
-  minify: minify,
-  sourcemap: true,
-  treeShaking: true,
-  metafile: true,
-});
+const args = [
+  "bundle",
+  "-I",
+  "--outdir",
+  outdi,
+  "--format=esm",
+  "--config",
+  fromFileUrl(import.meta.resolve("../deno.json")),
+  "--sourcemap",
+  // "--code-splitting",
+  entry,
+];
 
-await Deno.writeTextFile(
-  fromFileUrl(import.meta.resolve("../dist/metafile.json")),
-  JSON.stringify(result.metafile, null, 2),
-);
+if (minify) {
+  args.push("--minify");
+}
 
-esbuild.stop();
+await new Deno.Command(Deno.execPath(), {
+  args: args,
+})
+  .spawn()
+  .output();
