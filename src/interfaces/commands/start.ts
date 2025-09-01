@@ -2,7 +2,7 @@ import type { CommandConfig } from "$infrastructure/commands.ts";
 import { bold } from "../../utils.ts";
 
 export const config: CommandConfig = {
-  command: "start",
+  name: "start",
   description: "Start the bot",
   setup(bot) {
     bot.command("start", async (ctx) => {

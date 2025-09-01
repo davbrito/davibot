@@ -46,7 +46,7 @@ async function createConfigsManifest(): Promise<string> {
     const stem = path.basename(commandPath, path.extname(commandPath));
     const commandName = stem === "index" ? path.dirname(commandPath) : stem;
     const commandPathNormalized = commandPath.replace(path.SEPARATOR, "/");
-    const commandValue = `_lazy(() => import("$interfaces/commands/${commandPathNormalized}"))`;
+    const commandValue = `() => import("$interfaces/commands/${commandPathNormalized}")`;
     commandEntries.push(`"${commandName}": ${commandValue}`);
   }
 
@@ -71,15 +71,6 @@ async function createConfigsManifest(): Promise<string> {
     } satisfies ManifestSchema;
 
     export default manifest;
-
-    function _lazy<T>(fn: () => Promise<T>): () => T | Promise<T> {
-      let cache: T | undefined;
-
-      return () => (cache ?? (fn().then((result) => {
-        cache = result;
-        return result;
-      })));
-    }
   `;
 }
 

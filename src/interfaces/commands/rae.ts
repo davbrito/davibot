@@ -8,7 +8,7 @@ import {
 } from "../handlers/rae.handler.tsx";
 
 export const config: CommandConfig = {
-  command: "rae",
+  name: "rae",
   description: "Busca una palabra en la RAE",
   setup: (bot) => {
     bot.callbackQuery(/^rae-more (.+)$/, raeMoreCallbackQueryHandler);

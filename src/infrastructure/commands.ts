@@ -1,10 +1,10 @@
+import { codeBlock } from "$interfaces/helpers/markdown.ts";
 import { errorBoundary } from "$interfaces/middlewares/error-handler.middleware.tsx";
 import manifest from "$manifest";
 import { sample } from "@std/random";
-import { Bot, Composer } from "grammy";
+import { Bot, CommandMiddleware, Composer } from "grammy";
 import { AppContextType } from "../context.ts";
 import { resolveCommandConfig } from "../manifest.ts";
-import { codeBlock } from "$interfaces/helpers/markdown.ts";
 
 type MaybePromise<T> = T | Promise<T>;
 export type SetupFunction = (
@@ -15,9 +15,10 @@ export type SetupFunction = (
 type AppComposer = Composer<AppContextType>;
 
 export interface CommandConfig {
-  command: string;
+  name: string;
   description: string;
   setup?: SetupFunction;
+  command?: CommandMiddleware<AppContextType>;
 }
 
 let commandConfigs: CommandConfig[] = [];
@@ -25,11 +26,11 @@ let commandConfigs: CommandConfig[] = [];
 export const setupCommands: SetupFunction = async (composer, bot) => {
   commandConfigs = [
     {
-      command: "about",
+      name: "about",
       description: "About the bot",
     },
     {
-      command: "end",
+      name: "end",
       description: "End the bot",
     },
     ...(await loadCommandConfigs()),
@@ -87,6 +88,10 @@ export const setupCommands: SetupFunction = async (composer, bot) => {
         manifest.commands[commandKey as keyof typeof manifest.commands],
       );
       const config = command.config;
+
+      if (config?.command) {
+        composer.command(config.name, config.command);
+      }
 
       if (config?.setup) {
         await config.setup(composer, bot);
