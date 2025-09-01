@@ -46,6 +46,14 @@ export class SessionManager {
     return await callback(session);
   }
 
+  async toggleXkcdSubscription(): Promise<boolean> {
+    this.#ctx.session ??= SessionManager.#getInitialData();
+    const session = await this.#ctx.session;
+    session.xkcdSubscription = !session.xkcdSubscription;
+    this.#ctx.session = session;
+    return session.xkcdSubscription;
+  }
+
   static middleware(): Composer<AppContextType> {
     return new Composer<AppContextType>()
       .use(
