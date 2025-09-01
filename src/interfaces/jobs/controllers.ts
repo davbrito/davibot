@@ -1,4 +1,4 @@
 import { dailyXkcdJobHandler } from "./handlers.ts";
 
-// daily
-Deno.cron("send daily xkcd", "0 0 * * *", dailyXkcdJobHandler);
+// daily at 9 AM Venezuela timezone (-4 UTC)
+Deno.cron("send daily xkcd", "0 13 * * *", dailyXkcdJobHandler); // Adjusted to UTC
