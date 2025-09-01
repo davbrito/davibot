@@ -4,10 +4,10 @@ export const comicSchema = z.object({
   img: z.url(),
   title: z.string(),
   alt: z.string(),
-  num: z.number(),
-  year: z.number(),
-  month: z.number(),
-  day: z.number(),
+  num: z.coerce.number(),
+  year: z.coerce.number(),
+  month: z.coerce.number(),
+  day: z.coerce.number(),
 });
 
 export type Comic = z.infer<typeof comicSchema>;
