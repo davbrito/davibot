@@ -41,7 +41,7 @@ export const setupCommands: SetupFunction = async (composer, bot) => {
     if (ctx.from?.username === manifest.author) {
       ctx.reply(
         "Build info:\n" +
-          codeBlock(JSON.stringify(manifest.buildMetadata), "json"),
+          codeBlock(JSON.stringify(manifest.buildMetadata, null, 2), "json"),
         { parse_mode: "MarkdownV2" },
       );
     } else {
