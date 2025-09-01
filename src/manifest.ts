@@ -11,7 +11,7 @@ export interface Restrictions {
 }
 
 interface CommandModule {
-  config: CommandConfig;
+  config: CommandConfig | CommandConfig[];
 }
 
 export interface ManifestSchema {
@@ -23,9 +23,9 @@ export interface ManifestSchema {
   buildMetadata?: Record<string, unknown>;
 }
 
-export async function resolveCommandConfig<T extends CommandModule>(
-  command: SetupFunction<T> | T,
-): Promise<T> {
+export async function resolveCommandConfig(
+  command: SetupFunction<CommandModule> | CommandModule,
+): Promise<CommandModule> {
   if (typeof command === "function") {
     return await command();
   }

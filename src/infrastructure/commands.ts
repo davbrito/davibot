@@ -4,7 +4,6 @@ import manifest from "$manifest";
 import { sample } from "@std/random";
 import { Bot, CommandMiddleware, Composer } from "grammy";
 import { AppContextType } from "../context.ts";
-import { resolveCommandConfig } from "../manifest.ts";
 
 type MaybePromise<T> = T | Promise<T>;
 export type SetupFunction = (
@@ -83,22 +82,22 @@ export const setupCommands: SetupFunction = async (composer, bot) => {
   async function loadCommandConfigs(): Promise<CommandConfig[]> {
     const commands: CommandConfig[] = [];
 
-    for (const commandKey of Object.keys(manifest.commands)) {
-      const command = await resolveCommandConfig(
-        manifest.commands[commandKey as keyof typeof manifest.commands],
-      );
-      const config = command.config;
-
-      if (config?.command) {
+    const addCommand = (config: CommandConfig) => {
+      commands.push(config);
+      if (config.command) {
         composer.command(config.name, config.command);
       }
-
-      if (config?.setup) {
-        await config.setup(composer, bot);
+      if (config.setup) {
+        config.setup(composer, bot);
       }
+    };
 
-      if (config) {
-        commands.push(config);
+    for (const commandModule of Object.values(manifest.commands)) {
+      const command = await commandModule();
+      if (Array.isArray(command.config)) {
+        command.config.forEach(addCommand);
+      } else {
+        addCommand(command.config);
       }
     }
 
