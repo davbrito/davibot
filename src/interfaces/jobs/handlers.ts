@@ -15,12 +15,17 @@ export async function dailyXkcdJobHandler() {
   const comic = await getXkcdUsecase({ text: "current", xkcdRepository });
   const response = createXkcdResponse(comic);
 
+  let count = 0;
+
   for await (const [chatId, session] of db.session.listSessions()) {
     if (session.xkcdSubscription) {
       await bot.api.sendPhoto(chatId, response.image, {
         caption: renderToStaticMarkup(response.caption),
         parse_mode: "HTML",
       });
+      count++;
     }
   }
+
+  console.log(`Sent ${count} XKCD updates.`);
 }
