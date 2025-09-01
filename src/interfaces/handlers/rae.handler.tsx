@@ -51,7 +51,6 @@ export async function raeInlineQueryHandler(
   ctx: InlineQueryContext<AppContextType>,
 ) {
   const palabra = ctx.match[0];
-  console.log("Inline query for RAE:", palabra);
   const items = await searchDictionaryEntries(palabra);
   await ctx.inlineQuery.answer(createWordListInlineQueryResult(items));
 }
