@@ -1,4 +1,9 @@
 import { retrieveWordDefinitionUsecase } from "$application/usecases/retrieve-word-definition.usecase.tsx";
+import {
+  createInlineKeyboardPagination,
+  makeKeyboardCallbackQuery,
+  readKeyboardCallbackQuery,
+} from "$infrastructure/helpers/keyboard.ts";
 import { searchDictionaryEntries } from "$infrastructure/repositories/rae-dictionary.repository.ts";
 import {
   CallbackQueryContext,
@@ -15,11 +20,6 @@ import {
   createWordListInlineQueryResult,
   createWordNotFoundResponse,
 } from "../helpers/rae-response.helper.tsx";
-import {
-  createInlineKeyboardPagination,
-  makeKeyboardCallbackQuery,
-  readKeyboardCallbackQuery,
-} from "$infrastructure/helpers/keyboard.ts";
 
 export async function raeMoreCallbackQueryHandler(
   ctx: CallbackQueryContext<AppContextType>,
@@ -52,7 +52,12 @@ export async function raeInlineQueryHandler(
 ) {
   const palabra = ctx.match[1]!;
   const items = await searchDictionaryEntries(palabra);
-  await ctx.inlineQuery.answer(createWordListInlineQueryResult(items));
+  await ctx.inlineQuery.answer(createWordListInlineQueryResult(items), {
+    is_personal: false,
+    button: !items.length
+      ? { text: "No se encontraron resultados" }
+      : undefined,
+  });
 }
 
 export async function raeChosenInlineResultHandler(
