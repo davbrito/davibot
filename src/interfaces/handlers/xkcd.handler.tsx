@@ -54,7 +54,7 @@ async function loaderMessage(
     let message = error;
 
     if (ctx.isOwner) {
-      message += `\n\n\`${codeBlock(String(exc))}\``;
+      message += `\n\n${codeBlock(String(exc))}`;
     }
 
     await updateMessage(message);
