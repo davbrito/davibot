@@ -2,7 +2,6 @@ import { load } from "@std/dotenv";
 import * as fs from "@std/fs";
 import * as path from "@std/path";
 import * as iasync from "iteretijs/async";
-import { relative } from "node:path";
 import { z } from "zod";
 import denoJson from "../deno.json" with { type: "json" };
 import { generateApis } from "./apis.ts";
@@ -36,7 +35,7 @@ async function createConfigsManifest(): Promise<string> {
           includeDirs: false,
         }),
       ),
-      (x) => relative(commandsPath, x.path),
+      (x) => path.relative(commandsPath, x.path),
     ),
   );
 
