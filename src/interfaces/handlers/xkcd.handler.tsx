@@ -1,66 +1,9 @@
+import { getXkcdUsecase } from "$application/usecases/get-xkcd.usecase.ts";
+import { XkcdRepository } from "$infrastructure/repositories/xkcd.repository.ts";
 import { CommandContext } from "grammy";
 import { AppContextType } from "../../context.ts";
-import {
-  comicSchema,
-  createXkcdResponse,
-} from "../helpers/xkcd-response.helper.tsx";
-import { codeBlock } from "../helpers/markdown.ts";
-
-const idRegex = /^\d+$/;
-
-async function loaderMessage(
-  ctx: AppContextType,
-  {
-    pending,
-    error,
-    onError,
-  }: {
-    pending: string;
-    error: string;
-    onError: (error: unknown) => void;
-  },
-  cb: () => Promise<void>,
-) {
-  let messagePromise: ReturnType<typeof ctx.reply> | null = null;
-
-  const updateMessage = async (message: string, md?: boolean) => {
-    if (!messagePromise) {
-      messagePromise = ctx.reply(message, {
-        parse_mode: md ? "MarkdownV2" : undefined,
-      });
-      await messagePromise;
-      return;
-    }
-
-    const msg = await messagePromise;
-    await msg.editText(message, {
-      parse_mode: md ? "MarkdownV2" : undefined,
-    });
-  };
-
-  const deleteMessage = async () => {
-    if (messagePromise) {
-      const msg = await messagePromise;
-      await msg.delete();
-    }
-  };
-
-  try {
-    updateMessage(pending);
-    await cb();
-    deleteMessage();
-  } catch (exc) {
-    onError?.(exc);
-    let message = error;
-
-    if (ctx.isOwner) {
-      message += `\n\n${codeBlock(String(exc))}`;
-      await updateMessage(message, true);
-    } else {
-      await updateMessage(message);
-    }
-  }
-}
+import { loaderMessage } from "../helpers/loader.tsx";
+import { createXkcdResponse } from "../helpers/xkcd-response.helper.tsx";
 
 export async function xkcdCommandHandler(ctx: CommandContext<AppContextType>) {
   await loaderMessage(
@@ -73,16 +16,14 @@ export async function xkcdCommandHandler(ctx: CommandContext<AppContextType>) {
       },
     },
     async () => {
-      const res = await retrieveComic(ctx);
-      if (!res.ok) {
-        throw new Error(
-          `Error fetching comic: ${res.status} ${res.statusText}`,
-        );
-      }
+      const text = ctx.match;
 
-      const { image, caption } = createXkcdResponse(
-        comicSchema.parse(res.data),
-      );
+      const comic = await getXkcdUsecase({
+        text,
+        xkcdRepository: new XkcdRepository(ctx.apis),
+      });
+
+      const { image, caption } = createXkcdResponse(comic);
 
       await ctx.replyWithPhoto(image, {
         caption: ctx.renderReactText(caption),
@@ -91,21 +32,4 @@ export async function xkcdCommandHandler(ctx: CommandContext<AppContextType>) {
       });
     },
   );
-}
-
-async function retrieveComic(ctx: CommandContext<AppContextType>) {
-  const text = ctx.match;
-  const xkcd = ctx.apis.xkcd;
-
-  if (text === "current") {
-    return await xkcd.getCurrentComic({});
-  }
-
-  const id = text.trim().match(idRegex)?.[0];
-
-  if (id) {
-    return await xkcd.getComic({ id: Number(id) });
-  } else {
-    return await xkcd.getRandomComic();
-  }
 }

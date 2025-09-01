@@ -1,4 +1,5 @@
 import { DbContext } from "$infrastructure/kv/dbcontext.ts";
+import { InternalSessionData } from "$infrastructure/kv/session.ts";
 import {
   Composer,
   enhanceStorage,
@@ -12,6 +13,7 @@ import { HiSession } from "./hi-session.ts";
 
 const sessionDataSchema = z.looseObject({
   hiRequestId: z.number().nullable(),
+  xkcdSubscription: z.boolean(),
 });
 
 export type SessionData = z.infer<typeof sessionDataSchema>;
@@ -26,8 +28,9 @@ export class SessionManager {
   readonly hi = new HiSession(this);
 
   static #getInitialData(): SessionData {
-    return { hiRequestId: null };
+    return { hiRequestId: null, xkcdSubscription: false };
   }
+
   constructor(ctx: AppContextType) {
     this.#ctx = ctx;
   }
@@ -58,11 +61,11 @@ export class SessionManager {
   }
 }
 
-class KvAdapter implements StorageAdapter<any> {
-  read(key: string): Promise<any | undefined> {
-    return DbContext.use((db) => db.session.getSession(key));
+class KvAdapter implements StorageAdapter<InternalSessionData> {
+  read(key: string): Promise<InternalSessionData | undefined> {
+    return DbContext.use((db) => db.session.getSessionRaw(key));
   }
-  write(key: string, value: any): Promise<void> {
+  write(key: string, value: InternalSessionData): Promise<void> {
     return DbContext.use((db) => db.session.setSession(key, value));
   }
 
@@ -71,23 +74,25 @@ class KvAdapter implements StorageAdapter<any> {
   }
 
   has(key: string): Promise<boolean> {
-    return DbContext.use((db) => db.session.getSession(key)).then(Boolean);
+    return DbContext.use((db) => db.session.getSessionRaw(key)).then(Boolean);
   }
   async *readAllKeys(): AsyncIterable<string> {
     using db = await DbContext.connect();
-    for await (const [key] of db.session.listSessions()) {
+    for await (const [key] of db.session.listSessionsRaw()) {
       yield key;
     }
   }
-  async *readAllValues(): AsyncIterable<any> {
+  async *readAllValues(): AsyncIterable<InternalSessionData> {
     using db = await DbContext.connect();
 
-    for await (const [_, value] of db.session.listSessions()) {
+    for await (const [_, value] of db.session.listSessionsRaw()) {
       yield value;
     }
   }
-  async *readAllEntries(): AsyncIterable<[key: string, value: any]> {
+  async *readAllEntries(): AsyncIterable<
+    [key: string, value: InternalSessionData]
+  > {
     using db = await DbContext.connect();
-    yield* db.session.listSessions();
+    yield* db.session.listSessionsRaw();
   }
 }
