@@ -70,11 +70,9 @@ export class SessionManager {
 
 class KvAdapter implements StorageAdapter<InternalSessionData> {
   read(key: string): Promise<InternalSessionData | undefined> {
-    console.log("Reading session for key:", key);
     return DbContext.use((db) => db.session.getSessionRaw(key));
   }
   write(key: string, value: InternalSessionData): Promise<void> {
-    console.log("Writing session for key:", key, value);
     return DbContext.use((db) => db.session.setSession(key, value));
   }
 
@@ -83,11 +81,9 @@ class KvAdapter implements StorageAdapter<InternalSessionData> {
   }
 
   has(key: string): Promise<boolean> {
-    console.log("Checking existence of session for key:", key);
     const result = DbContext.use((db) => db.session.getSessionRaw(key)).then(
       Boolean,
     );
-    console.log("->:", key, result);
     return result;
   }
   async *readAllKeys(): AsyncIterable<string> {

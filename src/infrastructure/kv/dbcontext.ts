@@ -1,5 +1,6 @@
 import { DENO_KV_URL } from "../../config.ts";
 import { RaeRepository } from "../repositories/rae-html.repository.ts";
+import { XkcdSubscriptionRepository } from "../repositories/xkcd-subscription.repository.ts";
 import { BotInfoRepository } from "./bot-info.ts";
 import { SessionRepository } from "./session.ts";
 
@@ -9,6 +10,7 @@ export class DbContext {
   readonly botInfo = new BotInfoRepository(this);
   readonly rae = new RaeRepository(this);
   readonly session = new SessionRepository(this);
+  readonly xkcdSubscription = new XkcdSubscriptionRepository(this);
 
   constructor(kv: Deno.Kv) {
     this.#kv = kv;

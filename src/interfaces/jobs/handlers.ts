@@ -17,18 +17,12 @@ export async function dailyXkcdJobHandler() {
 
   let count = 0;
 
-  for await (const { key, value: subscribed } of db.kv.list<boolean>({
-    prefix: ["xkcd_subscription"],
-  })) {
-    const [, chatId] = key;
-    console.log("Sending XKCD update to chat:", chatId, subscribed);
-    if (subscribed) {
-      await bot.api.sendPhoto(String(chatId), response.image, {
-        caption: renderToStaticMarkup(response.caption),
-        parse_mode: "HTML",
-      });
-      count++;
-    }
+  for await (const chatId of db.xkcdSubscription.getSubscribedChatIds()) {
+    await bot.api.sendPhoto(String(chatId), response.image, {
+      caption: renderToStaticMarkup(response.caption),
+      parse_mode: "HTML",
+    });
+    count++;
   }
 
   console.log(`Sent ${count} XKCD updates.`);

@@ -39,11 +39,12 @@ export async function toggleXkcdSubscriptionHandler(
 ) {
   if (!ctx.from?.id) return;
 
-  const prev = await ctx.db.kv.get<boolean>(["xkcd_subscription", ctx.from.id]);
-  await ctx.db.kv.set(["xkcd_subscription", ctx.from.id], !prev.value);
-  if (prev.value) {
-    await ctx.reply("You have unsubscribed from XKCD updates.");
-  } else {
+  const isSubscribed = await ctx.db.xkcdSubscription.toggleSubscription(
+    ctx.from.id,
+  );
+  if (isSubscribed) {
     await ctx.reply("You have subscribed to XKCD updates.");
+  } else {
+    await ctx.reply("You have unsubscribed from XKCD updates.");
   }
 }
