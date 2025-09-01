@@ -85,7 +85,11 @@ class KvAdapter implements StorageAdapter<InternalSessionData> {
 
   has(key: string): Promise<boolean> {
     console.log("Checking existence of session for key:", key);
-    return DbContext.use((db) => db.session.getSessionRaw(key)).then(Boolean);
+    const result = DbContext.use((db) => db.session.getSessionRaw(key)).then(
+      Boolean,
+    );
+    console.log("->:", key, result);
+    return result;
   }
   async *readAllKeys(): AsyncIterable<string> {
     using db = await DbContext.connect();
