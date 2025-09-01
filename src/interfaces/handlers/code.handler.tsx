@@ -1,4 +1,4 @@
-import { fetchCodeExample } from "$infrastructure/code-examples.repository.ts";
+import { fetchCodeExample } from "$infrastructure/repositories/code-examples.repository.ts";
 import type { CommandContext } from "grammy";
 import type { AppContextType } from "../../context.ts";
 

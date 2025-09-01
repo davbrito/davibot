@@ -1,16 +1,16 @@
+import { setupCommands } from "$infrastructure/commands.ts";
 import { DbContext } from "$infrastructure/kv/dbcontext.ts";
 import { withDb } from "$infrastructure/kv/middleware.ts";
+import { withApis } from "$interfaces/middlewares/api.middleware.ts";
+import { react } from "$interfaces/middlewares/react.middleware.tsx";
+import { serveWebhook } from "$interfaces/webhook/server.ts";
 import { hydrate } from "@grammyjs/hydrate/mod.ts";
-import { sample } from "@std/random";
-import { Bot } from "grammy";
-import { setupCommands } from "./commands.ts";
+import { Api, Bot, Composer, RawApi } from "grammy";
+import { generateUpdateMiddleware } from "telegraf-middleware-console-time";
 import { BOT_SECRET, BOT_TOKEN, runAsWebhook } from "./config.ts";
 import { AppContextType } from "./context.ts";
-import { withApis } from "./middlewares/apis.ts";
-import { react } from "./react.tsx";
 import { SessionManager } from "./session/sessions.ts";
-import { logStart, measureDuration } from "./utils.ts";
-import { serveWebhook } from "./webhook.ts";
+import { logStart } from "./utils.ts";
 
 async function main() {
   console.log("Starting bot...");
@@ -22,7 +22,10 @@ async function main() {
   });
 
   if (!runAsWebhook) {
-    bot.use((_ctx, next) => measureDuration(next()));
+    bot.use(generateUpdateMiddleware(), (ctx, next) => {
+      console.log(`Received update: ${ctx.update.update_id}, type:`, ctx);
+      return next();
+    });
   }
 
   bot.use(
@@ -33,58 +36,7 @@ async function main() {
     SessionManager.middleware(),
   );
 
-  await setupCommands(bot);
-
-  bot.on("message:text").hears(/xd|(js)+|(ha(ha)+)/i, async (ctx) => {
-    await ctx.reply("xD", { reply_to_message_id: ctx.message.message_id });
-  });
-
-  bot.on("message:photo", async (ctx) => {
-    const reactions = [
-      {
-        emoji: "👍" as const,
-        text: "¡Qué bien! 👍",
-      },
-      {
-        emoji: "👎" as const,
-        text: "¡Vaya! 😔",
-      },
-      {
-        emoji: "😍" as const,
-        text: "¡Qué bonito! 😍",
-      },
-      {
-        emoji: "😍" as const,
-        text: "¡Qué foto tan bonita! 😍",
-      },
-      {
-        emoji: "😡" as const,
-        text: "¡Oh no! 😡",
-      },
-      {
-        emoji: "😁" as const,
-        text: "¡Qué risa! 😂",
-      },
-      {
-        emoji: "🤔" as const,
-        text: "¡Qué interesante! 🤔",
-      },
-    ];
-
-    const { emoji, text } = sample(reactions)!;
-    await Promise.all([
-      ctx.message.react(emoji),
-      ctx.reply(text, {
-        reply_to_message_id: ctx.message.message_id,
-      }),
-    ]);
-  });
-
-  bot.on("edited_message", (ctx) =>
-    ctx.reply("Ajá! Uldepasao! Editaste eto!", {
-      reply_to_message_id: ctx.editedMessage.message_id,
-    }),
-  );
+  await setupCommands(new Composer(), bot);
 
   bot.catch((error) => {
     console.error(
@@ -96,18 +48,39 @@ async function main() {
   if (runAsWebhook) {
     await serveWebhook(bot, BOT_SECRET);
   } else {
-    const botInfo = await bot.api.getMe();
-    console.log("Bot info:", botInfo);
-
-    await bot.start({
-      onStart: (info) => {
-        DbContext.use((db) => db.botInfo.set(info));
-        logStart(bot);
-      },
-    });
+    await serveLongPolling(bot);
   }
 }
 
 if (import.meta.main) {
   main();
+}
+
+async function serveLongPolling(bot: Bot<AppContextType, Api<RawApi>>) {
+  const gracefulShutdown = async () => {
+    console.log("Shutting down gracefully...");
+    await bot.stop();
+    Deno.exit();
+  };
+
+  Deno.addSignalListener("SIGINT", gracefulShutdown);
+  Deno.addSignalListener("SIGTERM", gracefulShutdown);
+  addEventListener("unhandledrejection", gracefulShutdown);
+  addEventListener("error", gracefulShutdown);
+  try {
+    await bot.start({
+      onStart: (info) => {
+        console.log("Bot info:", info);
+        DbContext.use((db) => db.botInfo.set(info));
+        logStart(bot);
+      },
+    });
+  } catch (error) {
+    console.error("Error starting bot:", error);
+  } finally {
+    Deno.removeSignalListener("SIGINT", gracefulShutdown);
+    Deno.removeSignalListener("SIGTERM", gracefulShutdown);
+    removeEventListener("unhandledrejection", gracefulShutdown);
+    removeEventListener("error", gracefulShutdown);
+  }
 }

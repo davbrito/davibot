@@ -1,4 +1,4 @@
-import { CommandConfig } from "../../commands.ts";
+import type { CommandConfig } from "$infrastructure/commands.ts";
 import { bold } from "../../utils.ts";
 
 export const config: CommandConfig = {

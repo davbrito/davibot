@@ -13,12 +13,10 @@ export const {
     BOT_TOKEN: z.string({ error: "BOT_TOKEN is required" }).nonempty(),
     BOT_SECRET: z.string({ error: "BOT_SECRET is required" }).nonempty(),
     DENO_DEPLOYMENT_ID: z.unknown().optional(),
-    WEBHOOK_MODE: z
-      .stringbool()
-      .default(false),
+    WEBHOOK_MODE: z.stringbool().default(false),
 
     DENO_KV_URL: z.string().optional(),
-    DEBUG: z.stringbool().default(false),
+    DEBUG: z.union([z.stringbool(), z.string()]).default(false),
   }),
 );
 

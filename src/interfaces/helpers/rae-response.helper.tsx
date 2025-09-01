@@ -1,6 +1,6 @@
 import { InlineKeyboard, InlineQueryResultBuilder } from "grammy";
 import { Fragment, type JSX, type ReactNode } from "react";
-import { makeKeyboardCallbackQuery } from "../handlers/keyboard.ts";
+import { makeKeyboardCallbackQuery } from "$infrastructure/helpers/keyboard.ts";
 
 export function createWordDefinitionResponse({
   word,
@@ -38,14 +38,14 @@ export function createWordDefinitionResponse({
 }
 
 export function createWordListInlineQueryResult(items: string[]) {
-  return items.map((item) => {
-    return InlineQueryResultBuilder.article(`rae:${item}`, item, {
+  return items.map((item) =>
+    InlineQueryResultBuilder.article(`rae:${item}`, item, {
       reply_markup: new InlineKeyboard().url(
         "🔗",
         `https://dle.rae.es/${encodeURI(item)}`,
       ),
-    }).text(item);
-  });
+    }).text(item),
+  );
 }
 
 export function createWordNotFoundResponse(

@@ -1,5 +1,5 @@
 import { retrieveWordDefinitionUsecase } from "$application/usecases/retrieve-word-definition.usecase.tsx";
-import { searchDictionaryEntries } from "$infrastructure/rae-dictionary.repository.ts";
+import { searchDictionaryEntries } from "$infrastructure/repositories/rae-dictionary.repository.ts";
 import {
   CallbackQueryContext,
   ChosenInlineResultContext,
@@ -19,7 +19,7 @@ import {
   createInlineKeyboardPagination,
   makeKeyboardCallbackQuery,
   readKeyboardCallbackQuery,
-} from "./keyboard.ts";
+} from "$infrastructure/helpers/keyboard.ts";
 
 export async function raeMoreCallbackQueryHandler(
   ctx: CallbackQueryContext<AppContextType>,
@@ -50,7 +50,7 @@ export async function raeCommandHandler(ctx: CommandContext<AppContextType>) {
 export async function raeInlineQueryHandler(
   ctx: InlineQueryContext<AppContextType>,
 ) {
-  const palabra = ctx.match[0];
+  const palabra = ctx.match[1]!;
   const items = await searchDictionaryEntries(palabra);
   await ctx.inlineQuery.answer(createWordListInlineQueryResult(items));
 }
@@ -59,7 +59,7 @@ export async function raeChosenInlineResultHandler(
   ctx: ChosenInlineResultContext<AppContextType>,
   next: NextFunction,
 ) {
-  const palabra = ctx.match[0];
+  const palabra = ctx.match[1]!;
   const messageId = ctx.chosenInlineResult.inline_message_id;
   if (!messageId) return next();
   await replyWithWord({

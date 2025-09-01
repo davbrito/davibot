@@ -5,6 +5,7 @@
     "exclude": ["dist/", "node_modules/", ".data"],
     "rules": {
       "tags": ["recommended", "react", "jsx"],
+      "include": [],
       "exclude": ["no-explicit-any"]
     }
   },
@@ -78,6 +79,7 @@
     "openapi-typescript-fetch": "npm:openapi-typescript-fetch@2.2.1",
     "react": "npm:react@^19.1.1",
     "react-dom": "npm:react-dom@^19.1.1",
+    "telegraf-middleware-console-time": "npm:telegraf-middleware-console-time@^3.0.0",
     "typescript": "npm:typescript@^5.9.2",
     "zod": "npm:zod@^4.1.5"
   },

@@ -1,6 +1,6 @@
 import { DENO_KV_URL } from "../../config.ts";
+import { RaeRepository } from "../repositories/rae-html.repository.ts";
 import { BotInfoRepository } from "./bot-info.ts";
-import { RaeRepository } from "./rae.ts";
 import { SessionRepository } from "./session.ts";
 
 export class DbContext {
@@ -21,10 +21,6 @@ export class DbContext {
   static async use<T>(callback: (db: DbContext) => T | Promise<T>): Promise<T> {
     using db = await DbContext.connect();
     return await callback(db);
-  }
-
-  async clearCache(): Promise<void> {
-    await this.rae.clearCache();
   }
 
   get kv() {

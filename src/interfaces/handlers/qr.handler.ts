@@ -1,47 +1,40 @@
-import { CommandConfig } from "../../commands.ts";
 import { parseArgs } from "@std/cli";
+import { CommandContext } from "grammy";
+import { AppContextType } from "../../context.ts";
 
-export const config: CommandConfig = {
-  command: "qr",
-  description: "Generates a QR code from the given text",
-  setup: (bot) => {
-    bot.command("qr", async (ctx) => {
-      const text = ctx.match;
+export async function qrCommandHandler(ctx: CommandContext<AppContextType>) {
+  const text = ctx.match;
 
-      if (!text) {
-        await ctx.reply("Please provide some text to generate a QR code from");
-        return;
-      }
+  if (!text) {
+    await ctx.reply("Please provide some text to generate a QR code from");
+    return;
+  }
 
-      const options = getOptions(text);
+  const options = getOptions(text);
 
-      const inputValue = String(options._[0]);
+  const inputValue = String(options._[0]);
 
-      const qrCodeUrl = getQrUrl(inputValue, options);
+  const qrCodeUrl = getQrUrl(inputValue, options);
 
-      const msg_id = ctx.message?.message_id;
+  const msg_id = ctx.message?.message_id;
 
-      const imageFormats = ["png", "jpg", "webp", "gif"];
-      const knownFormats = [...imageFormats, "svg", "eps"];
+  const imageFormats = ["png", "jpg", "webp", "gif"];
+  const knownFormats = [...imageFormats, "svg", "eps"];
 
-      if (!knownFormats.includes(options.format)) {
-        await ctx.reply(
-          `Formato desconhecido. Formatos suportados: ${knownFormats.join(
-            ", ",
-          )}`,
-          { reply_to_message_id: msg_id },
-        );
-      } else if (!imageFormats.includes(options.format)) {
-        const linkEmoji = String.fromCodePoint(0x1f517);
-        await ctx.reply(`${linkEmoji} ${qrCodeUrl}`, {
-          reply_to_message_id: msg_id,
-        });
-      } else {
-        await ctx.replyWithPhoto(qrCodeUrl, { reply_to_message_id: msg_id });
-      }
+  if (!knownFormats.includes(options.format)) {
+    await ctx.reply(
+      `Formato desconhecido. Formatos suportados: ${knownFormats.join(", ")}`,
+      { reply_to_message_id: msg_id },
+    );
+  } else if (!imageFormats.includes(options.format)) {
+    const linkEmoji = String.fromCodePoint(0x1f517);
+    await ctx.reply(`${linkEmoji} ${qrCodeUrl}`, {
+      reply_to_message_id: msg_id,
     });
-  },
-};
+  } else {
+    await ctx.replyWithPhoto(qrCodeUrl, { reply_to_message_id: msg_id });
+  }
+}
 
 function getOptions(text: string) {
   return parseArgs(parseToArgv(text), {

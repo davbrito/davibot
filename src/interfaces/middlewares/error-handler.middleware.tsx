@@ -8,8 +8,13 @@ export async function errorBoundary(
   _next: NextFunction,
 ) {
   const { ctx } = error;
+
   console.error("Error occurred:", error);
-  await ctx.replyWithReact(<ErrorMessage error={error} />);
+
+  // solo si es mensaje
+  if (ctx.message) {
+    await ctx.replyWithReact(<ErrorMessage error={error} />);
+  }
 }
 
 function ErrorMessage({ error }: { error: unknown }): ReactNode {

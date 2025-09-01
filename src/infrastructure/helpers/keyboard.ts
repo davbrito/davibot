@@ -75,19 +75,28 @@ export function createInlineKeyboardPagination(
 
 export function makeKeyboardCallbackQuery(
   command: string,
-  { acepcion, pagina, palabra, edit }: {
+  {
+    acepcion,
+    pagina,
+    palabra,
+    edit,
+  }: {
     acepcion?: number;
     pagina?: number;
     palabra: string;
     edit?: boolean;
   },
 ) {
-  return command + " " + new URLSearchParams({
-    acepcion: String(acepcion ?? 0),
-    pagina: String(pagina ?? 0),
-    palabra,
-    edit: edit ? "true" : "false",
-  }).toString();
+  return (
+    command +
+    " " +
+    new URLSearchParams({
+      acepcion: String(acepcion ?? 0),
+      pagina: String(pagina ?? 0),
+      palabra,
+      edit: edit ? "true" : "false",
+    }).toString()
+  );
 }
 
 export function readKeyboardCallbackQuery(text: string) {

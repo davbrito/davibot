@@ -1,6 +1,7 @@
-import { load } from "@std/dotenv";
 import { assert } from "@std/assert";
 import { parseArgs, promptSecret } from "@std/cli";
+import { load } from "@std/dotenv";
+import { Api } from "grammy";
 
 await load({
   envPath: Deno.env.get("ENV") ? `.env.${Deno.env.get("ENV")}` : ".env",
@@ -23,32 +24,29 @@ const options = parseArgs(Deno.args, {
 
 const [action] = options._;
 
-const BOT_TOKEN =
-  options.token || promptSecret("Enter bot token: ", { mask: "" });
-const baseUrl = new URL("https://api.telegram.org/bot" + BOT_TOKEN + "/");
-const setWebhookUrl = new URL("setWebhook", baseUrl);
-
-assert(BOT_TOKEN, "BOT_TOKEN is not set");
+const api = new Api(requireBotToken());
 
 const actions = {
-  delete() {
-    return fetch(setWebhookUrl, { method: "POST" });
+  async delete() {
+    if (!(await confirmAction())) {
+      console.log("Action canceled.");
+      return;
+    }
+    return api.deleteWebhook();
   },
-  set() {
-    const url = new URL(setWebhookUrl);
-    const webhookUrl = options.url || prompt("Enter webhook url: ");
-    const secret =
-      options.secret || promptSecret("Enter secret token: ", { mask: "" });
-    assert(webhookUrl, "webhook url is not set");
-    assert(secret, "secret token is not set");
-    url.searchParams.set("url", webhookUrl);
-    url.searchParams.set("secret_token", secret);
-    return fetch(url, { method: "POST" });
+  async set() {
+    const webhookUrl = requireWebhookUrl();
+    const secret = requireSecretToken();
+
+    if (!(await confirmAction())) {
+      console.log("Action canceled.");
+      return;
+    }
+
+    return api.setWebhook(webhookUrl, { secret_token: secret });
   },
   get() {
-    const url = new URL("./getWebhookInfo", baseUrl);
-    console.log(url.href);
-    return fetch(url);
+    return api.getWebhookInfo();
   },
 };
 
@@ -63,6 +61,35 @@ if (!handler) {
 }
 
 const response = await handler();
-const json = await response.json();
 
-console.log(json);
+console.log(response);
+
+async function confirmAction(): Promise<boolean> {
+  console.log("Getting bot info...");
+  const botInfo = await api.getMe();
+  console.log(
+    `You are about to modify the webhook for bot: ${botInfo.username}`,
+  );
+  const confirmation = prompt("Are you sure? (y/n)");
+  return confirmation?.toLowerCase() === "y";
+}
+
+function requireBotToken() {
+  const value =
+    options.token || promptSecret("Enter bot token: ", { mask: "" });
+  assert(value, "BOT_TOKEN is not set");
+  return value;
+}
+
+function requireSecretToken() {
+  const value =
+    options.secret || promptSecret("Enter secret token: ", { mask: "" });
+  assert(value, "BOT_SECRET is not set");
+  return value;
+}
+
+function requireWebhookUrl() {
+  const value = options.url || prompt("Enter webhook url: ");
+  assert(value, "WEBHOOK_URL is not set");
+  return value;
+}

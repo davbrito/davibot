@@ -1,5 +1,3 @@
-/// <reference types="@types/react" />
-/// <reference types="@types/react-dom" />
 import type { Context, MiddlewareFn } from "grammy";
 import { MessageXFragment } from "@grammyjs/hydrate/data/message.ts";
 import { ReactNode } from "react";
@@ -19,11 +17,11 @@ type EditMessageTextWithReact = MessageXFragment["editText"] extends (
   ? (message: MessageXFragment, node: ReactNode, ...args: A) => R
   : never;
 
-export type ReactFlavor = {
+export interface ReactFlavor {
   replyWithReact: ReplyWithReact;
   renderReactText: (node: ReactNode) => string;
   editMessageTextWithReact: EditMessageTextWithReact;
-};
+}
 
 export function react<C extends Context>(): MiddlewareFn<C & ReactFlavor> {
   return (ctx, next) => {
@@ -39,7 +37,7 @@ export function react<C extends Context>(): MiddlewareFn<C & ReactFlavor> {
       return message.editText(
         htmlString,
         { ...options, parse_mode: "HTML" },
-        ...args
+        ...args,
       );
     };
 

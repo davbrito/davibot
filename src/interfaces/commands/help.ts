@@ -1,4 +1,7 @@
-import { CommandConfig, getCommandConfigs } from "../../commands.ts";
+import {
+  type CommandConfig,
+  getCommandConfigs,
+} from "$infrastructure/commands.ts";
 
 function getHelpContent() {
   return getCommandConfigs()

@@ -1,4 +1,4 @@
-import { CommandConfig } from "./commands.ts";
+import type { CommandConfig } from "$infrastructure/commands.ts";
 
 export interface CommandRestrictions {
   allowed_users?: string[];
@@ -23,7 +23,7 @@ export interface ManifestSchema {
 }
 
 export async function resolveCommandConfig<T extends CommandModule>(
-  command: SetupFunction<T> | T
+  command: SetupFunction<T> | T,
 ): Promise<T> {
   if (typeof command === "function") {
     return await command();
