@@ -6,7 +6,7 @@ export const comicSchema = z.object({
   alt: z.string(),
   num: z.coerce.number(),
   year: z.coerce.number(),
-  month: z.coerce.number(),
+  month: z.number(),
   day: z.coerce.number(),
 });
 

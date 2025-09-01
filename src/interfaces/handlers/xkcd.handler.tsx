@@ -55,9 +55,10 @@ async function loaderMessage(
 
     if (ctx.isOwner) {
       message += `\n\n${codeBlock(String(exc))}`;
+      await updateMessage(message, true);
+    } else {
+      await updateMessage(message);
     }
-
-    await updateMessage(message);
   }
 }
 
