@@ -37,7 +37,7 @@ export const setupCommands: SetupFunction = async (composer, bot) => {
 
   composer.command("about", (ctx) => ctx.reply("Author: @" + manifest.author));
 
-  composer.command("build-info", (ctx, next) => {
+  composer.command("buildinfo", (ctx, next) => {
     if (ctx.from?.username === manifest.author) {
       ctx.reply(
         "Build info:\n" +
