@@ -1,12 +1,13 @@
 import { load } from "@std/dotenv";
 import * as fs from "@std/fs";
 import * as path from "@std/path";
+import * as iasync from "iteretijs/async";
+import { relative } from "node:path";
 import { z } from "zod";
+import denoJson from "../deno.json" with { type: "json" };
 import { generateApis } from "./apis.ts";
 import { manifestPath, sourcePath } from "./constants.ts";
 import { formatCode } from "./utils.ts";
-import * as iasync from "iteretijs/async";
-import { relative } from "node:path";
 
 const dotenv = await load().then((e) =>
   z
@@ -45,9 +46,15 @@ async function createConfigsManifest(): Promise<string> {
     const stem = path.basename(commandPath, path.extname(commandPath));
     const commandName = stem === "index" ? path.dirname(commandPath) : stem;
     const commandPathNormalized = commandPath.replace(path.SEPARATOR, "/");
-    const commandValue = `_lazy(() => import("./src/interfaces/commands/${commandPathNormalized}"))`;
+    const commandValue = `_lazy(() => import("$interfaces/commands/${commandPathNormalized}"))`;
     commandEntries.push(`"${commandName}": ${commandValue}`);
   }
+
+  const buildMetadata = {
+    author: dotenv.AUTHOR,
+    version: denoJson.version ?? "unknown",
+    timestamp: new Date().toISOString(),
+  };
 
   return `
     import type { ManifestSchema, Restrictions } from "./src/manifest.ts";
@@ -59,7 +66,8 @@ async function createConfigsManifest(): Promise<string> {
         commands: {
             ${commandEntries.join(",\n")}
         },
-        restrictions
+        restrictions,
+        buildMetadata: ${JSON.stringify(buildMetadata)}
     } satisfies ManifestSchema;
 
     export default manifest;
