@@ -47,7 +47,6 @@ export class SessionManager {
   }
 
   async toggleXkcdSubscription(): Promise<boolean> {
-    this.#ctx.session ??= SessionManager.#getInitialData();
     const session = await this.#ctx.session;
     session.xkcdSubscription = !session.xkcdSubscription;
     this.#ctx.session = session;

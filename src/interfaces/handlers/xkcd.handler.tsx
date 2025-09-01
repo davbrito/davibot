@@ -37,8 +37,11 @@ export async function xkcdCommandHandler(ctx: CommandContext<AppContextType>) {
 export async function toggleXkcdSubscriptionHandler(
   ctx: CommandContext<AppContextType>,
 ) {
-  const result = await ctx.sessionManager.toggleXkcdSubscription();
-  if (!result) {
+  if (!ctx.from?.id) return;
+
+  const prev = await ctx.db.kv.get<boolean>(["xkcd_subscription", ctx.from.id]);
+  await ctx.db.kv.set(["xkcd_subscription", ctx.from.id], !prev.value);
+  if (!prev.value) {
     await ctx.reply("You have unsubscribed from XKCD updates.");
   } else {
     await ctx.reply("You have subscribed to XKCD updates.");
