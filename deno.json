@@ -1,6 +1,6 @@
 {
   "version": "0.0.1",
-  "unstable": ["kv"],
+  "unstable": ["kv", "cron"],
   "lint": {
     "include": ["src", "tasks"],
     "exclude": ["dist/", "node_modules/", ".data"],

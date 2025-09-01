@@ -1,3 +1,5 @@
+import "$interfaces/jobs/controllers.ts";
+
 import { getBot } from "$infrastructure/bot.ts";
 import { setupCommands } from "$infrastructure/commands.ts";
 import { DbContext } from "$infrastructure/kv/dbcontext.ts";
