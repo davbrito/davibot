@@ -9,7 +9,7 @@ export class RaeRepository {
   public static readonly PREFIX = "rae-cache";
 
   #list(word?: string) {
-    return this.db.kv.list<Uint8Array>({
+    return this.db.kv.list<Uint8Array<ArrayBuffer>>({
       prefix: word ? [RaeRepository.PREFIX, word] : [RaeRepository.PREFIX],
     });
   }
@@ -49,7 +49,7 @@ export class RaeRepository {
         .pipeThrough(new FixedChunkStream(RaeRepository.MAX_BYTE_SIZE))
         .pipeTo(
           new WritableStream({
-            write(chunk: Uint8Array) {
+            write(chunk) {
               op.set([RaeRepository.PREFIX, word, currentIndex++], chunk, {
                 expireIn: RaeRepository.CACHE_EXPIRE_TIME,
               });
