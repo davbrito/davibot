@@ -4,13 +4,15 @@ import { AuthServiceAdapter } from "$infrastructure/adapters/auth.adapter.ts";
 import { DbContext } from "$infrastructure/kv/dbcontext.ts";
 import { green } from "@std/fmt/colors";
 import { route } from "@std/http/unstable-route";
-import { Bot, webhookCallback } from "grammy";
+import { Api, Bot, RawApi, webhookCallback } from "grammy";
 import { AppContextType } from "../../context.ts";
 import { logStart, measureDuration } from "../../utils.ts";
+import z from "zod";
 
 interface HttpServerContext {
   BOT_SECRET: string;
   auth: IAuthService;
+  api: Api<RawApi>;
 }
 
 async function handleCacheFlush(req: Request, ctx: HttpServerContext) {
@@ -19,6 +21,18 @@ async function handleCacheFlush(req: Request, ctx: HttpServerContext) {
     return Response.json({ error: "Invalid secret" }, { status: 403 });
   }
   await DbContext.use(clearCacheUseCase);
+  return Response.json({ ok: true });
+}
+
+async function handleSetWebhook(req: Request, ctx: HttpServerContext) {
+  const { url } = await req.json().then(z.object({ url: z.url() }).parse);
+  const secret = req.headers.get("x-webhook-secret") || "";
+  if (!ctx.auth.verify(secret)) {
+    return Response.json({ error: "Unauthorized" }, { status: 403 });
+  }
+
+  await ctx.api.setWebhook(url, { secret_token: secret });
+
   return Response.json({ ok: true });
 }
 
@@ -35,6 +49,7 @@ export async function serveWebhook(
   const context: HttpServerContext = {
     BOT_SECRET,
     auth: new AuthServiceAdapter(BOT_SECRET),
+    api: bot.api,
   };
 
   const routerHandler = route(
@@ -43,6 +58,11 @@ export async function serveWebhook(
         method: "POST",
         pattern: new URLPattern({ pathname: "/cache/flush" }),
         handler: (req) => handleCacheFlush(req, context),
+      },
+      {
+        method: "POST",
+        pattern: new URLPattern({ pathname: "/webhook" }),
+        handler: (req) => handleSetWebhook(req, context),
       },
       {
         method: "POST",

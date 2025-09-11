@@ -9,22 +9,26 @@ await load({
 });
 
 const options = parseArgs(Deno.args, {
+  boolean: ["read-env", "debug"],
   string: ["url", "secret", "token"],
   alias: {
     u: "url",
     s: "secret",
     t: "token",
-  },
-  default: {
-    url: Deno.env.get("WEBHOOK_URL"),
-    secret: Deno.env.get("BOT_SECRET"),
-    token: Deno.env.get("BOT_TOKEN"),
+    e: "read-env",
+    d: "debug",
   },
 });
 
+if (options["read-env"]) {
+  options.url ||= Deno.env.get("WEBHOOK_URL");
+  options.secret ||= Deno.env.get("BOT_SECRET");
+  options.token ||= Deno.env.get("BOT_TOKEN");
+}
+
 const [action] = options._;
 
-const api = new Api(requireBotToken());
+const api = new Api(requireBotToken(), { sensitiveLogs: options.debug });
 
 const actions = {
   async delete() {
