@@ -1,5 +1,5 @@
-import { Message } from "@grammyjs/types";
-import { SessionManager } from "./sessions.ts";
+import type { Message } from "@grammyjs/types";
+import type { SessionManager } from "../../session/sessions.ts";
 
 export class HiSession {
   constructor(private readonly manager: SessionManager) {}

@@ -9,7 +9,7 @@ import {
 } from "grammy";
 import { z } from "zod";
 import type { AppContextType } from "../context.ts";
-import { HiSession } from "./hi-session.ts";
+import { HiSession } from "$application/services/hi-session.ts";
 
 const sessionDataSchema = z.looseObject({
   hiRequestId: z.number().nullable(),
