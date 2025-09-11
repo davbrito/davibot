@@ -73,6 +73,7 @@ export class RaeRepository {
   async getWordHtml(word: string) {
     const url = `https://dle.rae.es/${encodeURI(word)}`;
     const cached = await this.#getFromCache(word);
+    console.log(`[dict] Cache ${cached ? "hit" : "miss"} for word: ${word}`);
     if (cached) return { url, html: cached };
 
     const response = await fetch(url);
