@@ -25,15 +25,20 @@ async function handleCacheFlush(req: Request, ctx: HttpServerContext) {
 }
 
 async function handleSetWebhook(req: Request, ctx: HttpServerContext) {
-  const { url } = await req.json().then(z.object({ url: z.url() }).parse);
-  const secret = req.headers.get("x-webhook-secret") || "";
-  if (!ctx.auth.verify(secret)) {
-    return Response.json({ error: "Unauthorized" }, { status: 403 });
+  try {
+    const { url } = await req.json().then(z.object({ url: z.url() }).parse);
+    const secret = req.headers.get("x-webhook-secret") || "";
+    if (!ctx.auth.verify(secret)) {
+      return Response.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    await ctx.api.setWebhook(url, { secret_token: secret });
+
+    return Response.json({ ok: true });
+  } catch (error) {
+    console.error("Error setting webhook", String(error));
+    return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
-
-  await ctx.api.setWebhook(url, { secret_token: secret });
-
-  return Response.json({ ok: true });
 }
 
 export async function serveWebhook(
