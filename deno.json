@@ -6,7 +6,7 @@
     "exclude": ["dist/", "node_modules/", ".data"],
     "rules": {
       "tags": ["recommended", "react", "jsx"],
-      "include": [],
+      "include": ["no-import-prefix"],
       "exclude": ["no-explicit-any"]
     }
   },
