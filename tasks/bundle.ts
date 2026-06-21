@@ -17,9 +17,6 @@ const { minify } = parseArgs(Deno.args, {
 const entry = import.meta.resolve("../src/main.tsx");
 const outdi = fromFileUrl(import.meta.resolve("../dist/"));
 
-Deno.removeSync(outdi, { recursive: true });
-Deno.mkdirSync(outdi, { recursive: true });
-
 const result = await Deno.bundle({
   entrypoints: [entry],
   outputDir: outdi,
