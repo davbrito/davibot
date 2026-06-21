@@ -1,9 +1,9 @@
 import * as fs from "@std/fs";
 import * as path from "@std/path";
-import openapiTS, { astToString } from "openapi-typescript";
 import ts from "typescript";
 import { projectRoot } from "./constants.ts";
 import { formatCode } from "./utils.ts";
+import { createClient } from "@hey-api/openapi-ts";
 
 function removeNeverProperties(node: ts.Node) {
   if (
@@ -38,43 +38,20 @@ export async function generateApis() {
   const apisDir = path.join(projectRoot, "apis.gen");
   await fs.ensureDir(apisDir);
 
-  for (const [name, { schema: url }] of Object.entries(apis)) {
-    const code = await openapiTS(url).then((ast) => {
-      ast = ast.map(removeNeverProperties).flat();
-
-      return astToString(ast);
-    });
-    const filePath = path.join(apisDir, `${name}.ts`);
-    const file = await Deno.open(filePath, {
-      write: true,
-      create: true,
-      truncate: true,
-    });
-    await formatCode(code).pipeTo(file.writable);
-  }
-
-  const moduleCode = `
-import { Fetcher } from 'openapi-typescript-fetch'; 
-${Object.keys(apis).map((name) => `import * as ${name} from "./${name}.ts";`)}
-
-${Object.entries(apis)
-  .map(([name, { baseUrl }]) => {
-    const fetcher = `${name}Fetcher`;
-    const baseUrlName = `${name}BaseUrl`;
-    return (
-      `export const ${baseUrlName} = ${JSON.stringify(baseUrl)};\n` +
-      `export const ${fetcher} = Fetcher.for<${name}.paths>();\n` +
-      `${fetcher}.configure({ baseUrl: ${baseUrlName} });`
-    );
-  })
-  .join("\n")}
-`;
-
-  const moduleFilePath = path.join(apisDir, "mod.ts");
-  const moduleFile = await Deno.open(moduleFilePath, {
-    write: true,
-    create: true,
-    truncate: true,
-  });
-  await formatCode(moduleCode).pipeTo(moduleFile.writable);
+  await createClient(
+    Object.entries(apis).map(([name, { schema: url }]) => ({
+      input: url,
+      output: {
+        path: path.join(apisDir, name),
+        module: {
+          extension: ".ts",
+        },
+      },
+      plugins: [
+        { name: "@hey-api/sdk", validator: "zod" },
+        { name: "@hey-api/client-fetch", validator: "zod" },
+        { name: "zod" },
+      ],
+    })),
+  );
 }

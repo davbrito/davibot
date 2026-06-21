@@ -1,20 +1,8 @@
-import z from "zod";
-
-export const comicSchema = z.object({
-  img: z.url(),
-  title: z.string(),
-  alt: z.string(),
-  num: z.coerce.number(),
-  year: z.coerce.number(),
-  month: z.coerce.number(),
-  day: z.coerce.number(),
-});
-
-export type Comic = z.infer<typeof comicSchema>;
+import type { Comic } from "$apis/xkcd/index.ts";
 
 export function createXkcdResponse(comic: Comic) {
   return {
-    image: comic.img,
+    image: comic.img!,
     caption: (
       <>
         <b>{comic.title}</b> {"\n"}
