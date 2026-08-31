@@ -1,6 +1,8 @@
-import { DbContext } from "$infrastructure/kv/dbcontext.ts";
-import { DOMParser, Element, initParser } from "@b-fuze/deno-dom/wasm-noinit";
+import type { DbContext } from "$infrastructure/kv/dbcontext.ts";
+import { DOMParser, initParser } from "@b-fuze/deno-dom/wasm-noinit";
+import type { Element } from "@b-fuze/deno-dom/wasm-noinit";
 import { Fragment } from "react";
+
 import { reformatNode, reformatNodeList } from "../services/dom.tsx";
 
 const ETIMOLOGY_SELECTOR = ".n2,.n3";

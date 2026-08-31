@@ -1,5 +1,6 @@
-import { Bot } from "grammy";
 import { brightBlack, dim, green } from "@std/fmt/colors";
+import type { Bot } from "grammy";
+
 import { BOT_TOKEN } from "./config.ts";
 import type { AppContextType } from "./context.ts";
 

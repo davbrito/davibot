@@ -1,4 +1,4 @@
-import { XkcdRepository } from "$infrastructure/repositories/xkcd.repository.ts";
+import type { XkcdRepository } from "$infrastructure/repositories/xkcd.repository.ts";
 
 const idRegex = /^\d+$/;
 

@@ -1,4 +1,4 @@
-import { IAuthService } from "$application/services/auth.service.ts";
+import type { IAuthService } from "$application/services/auth.service.ts";
 
 export class AuthServiceAdapter implements IAuthService {
   constructor(private readonly secret: string) {}

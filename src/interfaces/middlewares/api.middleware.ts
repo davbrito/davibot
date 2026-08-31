@@ -1,7 +1,5 @@
-import {
-  ExternalApis,
-  getExternalApis,
-} from "$infrastructure/adapters/api.adapter.ts";
+import type { ExternalApis } from "$infrastructure/adapters/api.adapter.ts";
+import { getExternalApis } from "$infrastructure/adapters/api.adapter.ts";
 import type { Context, MiddlewareFn } from "grammy";
 
 export interface ApisFlavor {

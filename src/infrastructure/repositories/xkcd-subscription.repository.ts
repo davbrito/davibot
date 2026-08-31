@@ -1,4 +1,4 @@
-import { DbContext } from "../kv/dbcontext.ts";
+import type { DbContext } from "../kv/dbcontext.ts";
 
 export class XkcdSubscriptionRepository {
   private readonly prefix: Deno.KvKey = ["xkcd_subscription"];

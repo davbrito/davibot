@@ -1,5 +1,7 @@
-import { Element, Node, NodeType } from "@b-fuze/deno-dom/wasm-noinit";
-import { Fragment, ReactNode } from "react";
+import { NodeType } from "@b-fuze/deno-dom/wasm-noinit";
+import type { Element, Node } from "@b-fuze/deno-dom/wasm-noinit";
+import { Fragment } from "react";
+import type { ReactNode } from "react";
 
 interface ReformatNodeOptions {
   expandAbbreviations?: boolean;

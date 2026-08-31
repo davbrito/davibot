@@ -1,7 +1,8 @@
-import { BotError, NextFunction } from "grammy";
+import type { BotError, NextFunction } from "grammy";
 import type { ReactNode } from "react";
+
 import { DEBUG } from "../../config.ts";
-import { AppContextType } from "../../context.ts";
+import type { AppContextType } from "../../context.ts";
 import { notifyAdmin } from "../../infrastructure/helpers/notify-admin.ts";
 
 export async function errorBoundary(

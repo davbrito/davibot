@@ -1,4 +1,5 @@
-import { Context, MiddlewareFn } from "grammy";
+import type { Context, MiddlewareFn } from "grammy";
+
 import { DbContext } from "./dbcontext.ts";
 
 export interface DbFlavor {

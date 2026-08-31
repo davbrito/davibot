@@ -1,7 +1,8 @@
 import { getXkcdUsecase } from "$application/usecases/get-xkcd.usecase.ts";
 import { XkcdRepository } from "$infrastructure/repositories/xkcd.repository.ts";
-import { CommandContext } from "grammy";
-import { AppContextType } from "../../context.ts";
+import type { CommandContext } from "grammy";
+
+import type { AppContextType } from "../../context.ts";
 import { loaderMessage } from "../helpers/loader.tsx";
 import { createXkcdResponse } from "../helpers/xkcd-response.helper.tsx";
 
