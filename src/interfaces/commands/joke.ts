@@ -1,4 +1,5 @@
 import type { CommandConfig } from "$infrastructure/commands.ts";
+
 import { jokeCommandHandler } from "../handlers/joke.handler.ts";
 
 export const config: CommandConfig = {

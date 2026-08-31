@@ -1,4 +1,5 @@
 import { retrieveWordDefinitionUsecase } from "$application/usecases/retrieve-word-definition.usecase.tsx";
+import { factory } from "$infrastructure/app.ts";
 import {
   createInlineKeyboardPagination,
   makeKeyboardCallbackQuery,
@@ -13,7 +14,8 @@ import type {
   NextFunction,
 } from "grammy";
 import { InlineKeyboard } from "grammy";
-import { Fragment, type ReactNode } from "react";
+import { Fragment } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
 import type { AppContextType } from "../../context.ts";
 import {
@@ -244,8 +246,8 @@ const MoreContent = ({
 }: {
   more:
     | {
-        title: ReactNode;
-        acepciones: ReactNode[];
+        title: React.ReactNode;
+        acepciones: React.ReactNode[];
       }[]
     | undefined;
   page: number;
@@ -267,7 +269,6 @@ const MoreContent = ({
           {"\n\n"}
         </Fragment>
       ))}
-
       {pageCount > 1 && (
         <i>
           {page + 1}/{pageCount}
@@ -276,3 +277,88 @@ const MoreContent = ({
     </>
   );
 };
+
+export const raeHtmlTestHandler = factory.createHandlers(async (c) => {
+  const word = c.req.query("word");
+
+  const render = (content: React.ReactNode) =>
+    c.html(
+      renderToStaticMarkup(
+        <>
+          <style>
+            {`
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+          }
+          a {
+            color: blue;
+            text-decoration: none;
+          }
+          a:hover {
+            text-decoration: underline;
+          }
+        `}
+          </style>
+          <div style={{ whiteSpace: "pre-wrap" }}>{content}</div>
+        </>,
+      ),
+    );
+
+  if (!word) {
+    c.status(400);
+    return render(<div>Please provide a word query parameter</div>);
+  } else {
+    const result = await retrieveWordDefinitionUsecase({
+      db: c.var.db,
+      palabra: word,
+      botUserName: "test_bot",
+      acepcionIndex: 0,
+    });
+
+    if (!result || result.sugerencias) {
+      const { content } = createWordNotFoundResponse(word, result?.sugerencias);
+      return render(
+        <>
+          {content}
+          <ul>
+            {result?.sugerencias?.map((sugerencia, index) => (
+              <li key={index}>
+                <a href={`?word=${sugerencia.word}`}>{sugerencia.label}</a>
+              </li>
+            ))}
+          </ul>
+          <pre>{JSON.stringify(result, null, 2)}</pre>
+        </>,
+      );
+    } else {
+      const { content } = createWordDefinitionResponse({
+        word: result.word,
+        etimologia: result.etimologia,
+        definiciones: result.definiciones,
+        url: result.url,
+      });
+      return render(
+        <>
+          {content}
+          {result.more && (
+            <div style={{ marginTop: "20px" }}>
+              <dl>
+                {result.more.map((item, index) => (
+                  <Fragment key={index}>
+                    <dt>
+                      <b>{item.title}</b>
+                    </dt>
+                    {item.acepciones.map((acepcion, aindex) => (
+                      <dd key={aindex}>{acepcion}</dd>
+                    ))}
+                  </Fragment>
+                ))}
+              </dl>
+            </div>
+          )}
+        </>,
+      );
+    }
+  }
+});

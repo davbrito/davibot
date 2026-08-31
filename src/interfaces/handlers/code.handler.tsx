@@ -1,5 +1,6 @@
 import { fetchCodeExample } from "$infrastructure/repositories/code-examples.repository.ts";
 import type { CommandContext } from "grammy";
+
 import type { AppContextType } from "../../context.ts";
 
 export default async function codeCommandHandler(

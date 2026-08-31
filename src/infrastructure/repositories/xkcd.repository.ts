@@ -21,8 +21,7 @@ export class XkcdRepository {
     }).then((res) => {
       res.body?.cancel();
       const location = res.headers.get("Location");
-      const id = location &&
-        /http:\/\/xkcd.com\/(\d+)\//.exec(location)?.[1];
+      const id = location && /http:\/\/xkcd.com\/(\d+)\//.exec(location)?.[1];
       if (!id) throw new Error("Could not get random xkcd comic");
       return Number(id);
     });
