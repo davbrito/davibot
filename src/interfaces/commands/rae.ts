@@ -1,4 +1,4 @@
-import { CommandConfig } from "$infrastructure/commands.ts";
+import type { CommandConfig } from "$infrastructure/commands.ts";
 import {
   raeCallbackQueryHandler,
   raeChosenInlineResultHandler,

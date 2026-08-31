@@ -5,16 +5,17 @@ import {
   readKeyboardCallbackQuery,
 } from "$infrastructure/helpers/keyboard.ts";
 import { searchDictionaryEntries } from "$infrastructure/repositories/rae-dictionary.repository.ts";
-import {
+import type {
   CallbackQueryContext,
   ChosenInlineResultContext,
   CommandContext,
-  InlineKeyboard,
   InlineQueryContext,
   NextFunction,
 } from "grammy";
-import { Fragment } from "react";
-import { AppContextType } from "../../context.ts";
+import { InlineKeyboard } from "grammy";
+import { Fragment, type ReactNode } from "react";
+
+import type { AppContextType } from "../../context.ts";
 import {
   createWordDefinitionResponse,
   createWordListInlineQueryResult,
@@ -110,14 +111,7 @@ async function replyWithWord({
     return;
   }
 
-  const {
-    word,
-    definiciones: definiciones,
-    etimologia,
-    url,
-    more,
-    acepciones,
-  } = result;
+  const { word, definiciones, etimologia, url, more, acepciones } = result;
 
   let reply_markup: InlineKeyboard | undefined;
 
@@ -165,7 +159,6 @@ async function replyWithWord({
   } as const;
 
   if (editInlineMessageId) {
-    console.log("editInlineMessageId", editInlineMessageId);
     await ctx.api.editMessageTextInline(
       editInlineMessageId,
       htmlContent,
@@ -212,9 +205,6 @@ async function replyMore(
   const { more } = result;
 
   const pageCount = Math.ceil((more?.length ?? 0) / PAGE_SIZE);
-  const start = page * PAGE_SIZE;
-  const end = start + PAGE_SIZE;
-  const sliced = more?.slice(start, end);
 
   const inline_keyboard = createInlineKeyboardPagination(
     acepcionIndex,
@@ -223,9 +213,49 @@ async function replyMore(
     pageCount,
   );
 
-  const Contenido = () => (
+  if (isEdit) {
+    if (ctx.callbackQuery?.message) {
+      await ctx.editMessageTextWithReact(
+        ctx.callbackQuery.message,
+        <MoreContent more={more} page={page} pageCount={pageCount} />,
+        {
+          parse_mode: "HTML",
+          reply_markup: inline_keyboard,
+          link_preview_options: { is_disabled: true },
+        },
+      );
+    }
+  } else {
+    await ctx.replyWithReact(
+      <MoreContent more={more} page={page} pageCount={pageCount} />,
+      {
+        reply_to_message_id: ctx.callbackQuery?.message?.message_id,
+        link_preview_options: { is_disabled: true },
+        reply_markup: inline_keyboard,
+      },
+    );
+  }
+}
+
+const MoreContent = ({
+  more,
+  page,
+  pageCount,
+}: {
+  more:
+    | {
+        title: ReactNode;
+        acepciones: ReactNode[];
+      }[]
+    | undefined;
+  page: number;
+  pageCount: number;
+}) => {
+  const start = page * PAGE_SIZE;
+  const end = start + PAGE_SIZE;
+  return (
     <>
-      {sliced?.map(({ title, acepciones }, index) => (
+      {more?.slice(start, end)?.map(({ title, acepciones }, index) => (
         <Fragment key={index}>
           <b>{title}</b>
           {acepciones.map((acepcion, aindex) => (
@@ -245,24 +275,4 @@ async function replyMore(
       )}
     </>
   );
-
-  if (isEdit) {
-    if (ctx.callbackQuery?.message) {
-      await ctx.editMessageTextWithReact(
-        ctx.callbackQuery.message,
-        <Contenido />,
-        {
-          parse_mode: "HTML",
-          reply_markup: inline_keyboard,
-          link_preview_options: { is_disabled: true },
-        },
-      );
-    }
-  } else {
-    await ctx.replyWithReact(<Contenido />, {
-      reply_to_message_id: ctx.callbackQuery?.message?.message_id,
-      link_preview_options: { is_disabled: true },
-      reply_markup: inline_keyboard,
-    });
-  }
-}
+};

@@ -1,6 +1,6 @@
-import { InlineKeyboard, InlineQueryResultBuilder } from "grammy";
-import { Fragment, type JSX, type ReactNode } from "react";
 import { makeKeyboardCallbackQuery } from "$infrastructure/helpers/keyboard.ts";
+import { InlineKeyboard, InlineQueryResultBuilder } from "grammy";
+import { Fragment, type ReactNode } from "react";
 
 export function createWordDefinitionResponse({
   word,
@@ -10,7 +10,7 @@ export function createWordDefinitionResponse({
 }: {
   word: string;
   etimologia: ReactNode;
-  definiciones: JSX.Element[];
+  definiciones: ReactNode[];
   url: string;
 }) {
   return {
