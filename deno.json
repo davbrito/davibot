@@ -26,8 +26,7 @@
     "strict": true,
     "strictNullChecks": true,
     "noImplicitAny": true,
-    "noUncheckedIndexedAccess": true,
-    "verbatimModuleSyntax": true
+    "noUncheckedIndexedAccess": true
   },
   "tasks": {
     "manifest": "deno run -A ./tasks/dev.ts",
@@ -55,13 +54,13 @@
     "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@0.1.56",
     "@grammyjs/hydrate": "https://deno.land/x/grammy_hydrate@v1.7.0/mod.ts",
     "@grammyjs/hydrate/": "https://deno.land/x/grammy_hydrate@v1.7.0/",
-    "@grammyjs/types": "https://deno.land/x/grammy_types@v3.28.0/mod.ts",
-    "@grammyjs/types/": "https://deno.land/x/grammy_types@v3.28.0/mod.ts/",
+    "@grammyjs/types": "https://deno.land/x/grammy_types@v4.0.0/mod.ts",
+    "@grammyjs/types/": "https://deno.land/x/grammy_types@v4.0.0/mod.ts/",
     "@grammyjs/auto-retry": "https://deno.land/x/grammy_auto_retry@v2.0.2/mod.ts",
     "@hey-api/openapi-ts": "npm:@hey-api/openapi-ts@^0.99.0",
     "@luca/esbuild-deno-loader": "jsr:@luca/esbuild-deno-loader@0.11.1",
     "@octokit/core": "npm:@octokit/core@7.0.6",
-    "@inquirer/prompts": "npm:@inquirer/prompts@^8.5.2",
+    "@inquirer/prompts": "npm:@inquirer/prompts@^8.7.0",
     "@std/assert": "jsr:@std/assert@1.0.19",
     "@std/async": "jsr:@std/async@^1.5.0",
     "@std/cli": "jsr:@std/cli@1.0.32",
@@ -80,16 +79,22 @@
     "@std/streams": "jsr:@std/streams@1.1.2",
     "@types/react": "npm:@types/react@^19.2.18",
     "@types/react-dom": "npm:@types/react-dom@^19.2.5",
-    "grammy": "https://deno.land/x/grammy@v1.44.0/mod.ts",
+    "grammy": "https://deno.land/x/grammy@v1.45.1/mod.ts",
     "iteretijs": "npm:iteretijs@0.2.3",
     "react": "npm:react@^19.2.8",
     "react-dom": "npm:react-dom@^19.2.8",
     "telegraf-middleware-console-time": "npm:telegraf-middleware-console-time@^3.0.0",
+    "typescript": "npm:typescript@^6.0.3",
     "zod": "npm:zod@^4.5.4"
   },
   "deploy": {
     "exclude": ["**/node_modules"],
     "include": ["dist/**/*", "public/**/*"],
     "entrypoint": "dist/main.js"
+  },
+  "scopes": {
+    "https://deno.land": {
+      "https://lib.deno.dev/x/grammy@v1/": "https://deno.land/x/grammy@v1.45.1/"
+    }
   }
 }
