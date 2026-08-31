@@ -1,7 +1,6 @@
-import { NodeType } from "@b-fuze/deno-dom/wasm-noinit";
-import type { Element, Node } from "@b-fuze/deno-dom/wasm-noinit";
-import { Fragment } from "react";
-import type { ReactNode } from "react";
+import { type Cheerio } from "cheerio";
+import type { AnyNode } from "domhandler";
+import { Fragment, type ReactNode } from "react";
 
 interface ReformatNodeOptions {
   expandAbbreviations?: boolean;
@@ -11,7 +10,7 @@ interface ReformatNodeOptions {
 }
 
 export function reformatNode(
-  node: Node,
+  $el: Cheerio<AnyNode>,
   ops: ReformatNodeOptions = {},
 ): ReactNode {
   const {
@@ -21,17 +20,22 @@ export function reformatNode(
     underlineSelectors,
   } = ops;
 
-  if (node.nodeType === NodeType.COMMENT_NODE) return null;
+  const raw = $el[0];
+  if (!raw) return null;
+  if (raw.type === "comment") return null;
 
-  if (node.nodeType === NodeType.TEXT_NODE) {
-    return node.textContent;
+  if (raw.type === "text") {
+    return raw.data;
   }
 
-  if (node.nodeType !== NodeType.ELEMENT_NODE) return null;
-  const element = node as Element;
+  if (raw.type !== "tag") return null;
 
-  if (["B", "I", "EM", "STRONG", "U", "A"].includes(element.nodeName)) {
-    const TagName = element.nodeName.toLowerCase() as
+  // It's an element node (type === "tag", "script", "style", etc.)
+  const tagName = $el.prop("tagName") as string | undefined;
+  if (!tagName) return null;
+
+  if (["B", "I", "EM", "STRONG", "U", "A"].includes(tagName)) {
+    const TagName = tagName.toLowerCase() as
       | "b"
       | "i"
       | "em"
@@ -41,31 +45,23 @@ export function reformatNode(
 
     const props: Record<string, any> = {};
     if (TagName === "a") {
-      props.href = element.getAttribute("href");
+      props.href = $el.attr("href");
     }
 
     return (
-      <TagName {...props}>{reformatNodeList(node.childNodes, ops)}</TagName>
+      <TagName {...props}>{reformatNodeList($el.contents(), ops)}</TagName>
     );
   }
 
-  const isItalic = italicSelectors?.some((selector) =>
-    element.matches(selector),
-  );
-  const isBold = boldSelectors?.some((selector) => element.matches(selector));
-  const isUnderline = underlineSelectors?.some((selector) =>
-    element.matches(selector),
-  );
+  const isItalic = italicSelectors?.some((selector) => $el.is(selector));
+  const isBold = boldSelectors?.some((selector) => $el.is(selector));
+  const isUnderline = underlineSelectors?.some((selector) => $el.is(selector));
 
   const result: ReactNode = (() => {
-    if (
-      element.nodeName === "ABBR" &&
-      expandAbbreviations &&
-      element.getAttribute("title")
-    ) {
-      return element.getAttribute("title");
+    if (tagName === "ABBR" && expandAbbreviations && $el.attr("title")) {
+      return $el.attr("title");
     }
-    return reformatNodeList(element.childNodes, ops);
+    return reformatNodeList($el.contents(), ops);
   })();
 
   const tags = [
@@ -81,12 +77,14 @@ export function reformatNode(
 }
 
 export function reformatNodeList(
-  nodes: Iterable<Node> | null | undefined,
+  $els: Cheerio<AnyNode> | null | undefined,
   ops: ReformatNodeOptions = {},
 ): ReactNode {
-  if (!nodes) return null;
+  if (!$els || !$els.length) return null;
 
-  return Array.from(nodes, (node, index) => (
-    <Fragment key={index}>{reformatNode(node, ops)}</Fragment>
-  ));
+  const nodes: ReactNode[] = [];
+  for (let i = 0; i < $els.length; i++) {
+    nodes.push(<Fragment key={i}>{reformatNode($els.eq(i), ops)}</Fragment>);
+  }
+  return nodes;
 }

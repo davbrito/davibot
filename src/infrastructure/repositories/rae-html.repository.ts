@@ -1,35 +1,20 @@
-import { toText, toTransformStream } from "@std/streams";
-import { FixedChunkStream } from "@std/streams/unstable-fixed-chunk-stream";
-
 import type { DbContext } from "../kv/dbcontext.ts";
 
 export class RaeRepository {
   constructor(private readonly db: DbContext) {}
-  private static readonly MAX_BYTE_SIZE = 65_536;
-  private static readonly CACHE_EXPIRE_TIME = 1000 * 60 * 60 * 24; // 24 hours
   public static readonly PREFIX = "rae-cache";
 
-  #list(word?: string) {
-    return this.db.kv.list<Uint8Array<ArrayBuffer>>({
-      prefix: word ? [RaeRepository.PREFIX, word] : [RaeRepository.PREFIX],
-    });
-  }
+  async *#list(word?: string) {
+    const prefix = word
+      ? RaeRepository.PREFIX + ":" + word
+      : RaeRepository.PREFIX;
 
-  #getAsStream(word: string) {
-    return ReadableStream.from(this.#list(word))
-      .pipeThrough(
-        toTransformStream(async function* (stream) {
-          for await (const entry of stream) {
-            yield entry.value;
-          }
-        }),
-      )
-      .pipeThrough(new TextDecoderStream());
+    yield* this.db.listKVKeys(prefix);
   }
 
   async #getFromCache(word: string) {
     try {
-      return await toText(this.#getAsStream(word));
+      return await this.db.kv.get(`${RaeRepository.PREFIX}:${word}`, "text");
     } catch (error) {
       console.error(`Failed to get cached word: ${word}`, String(error));
       return undefined;
@@ -41,33 +26,15 @@ export class RaeRepository {
     try {
       const kv = this.db.kv;
 
-      const op = kv.atomic();
-      this.#delete(op, word);
-
-      let currentIndex = 0;
-
-      await value
-        .pipeThrough(new FixedChunkStream(RaeRepository.MAX_BYTE_SIZE))
-        .pipeTo(
-          new WritableStream({
-            write(chunk) {
-              op.set([RaeRepository.PREFIX, word, currentIndex++], chunk, {
-                expireIn: RaeRepository.CACHE_EXPIRE_TIME,
-              });
-            },
-            async close() {
-              await op.commit();
-            },
-          }),
-        );
+      await kv.put(`${RaeRepository.PREFIX}:${word}`, value);
     } catch (error) {
-      console.error(`Failed to cache word: ${word}`, String(error));
+      console.error(`Failed to cache word: ${word}`, error);
     }
   }
 
-  async #delete(op: Deno.AtomicOperation, word?: string) {
+  async #delete(word?: string) {
     for await (const entry of this.#list(word)) {
-      op.check(entry).delete(entry.key);
+      await this.db.kv.delete(entry.name);
     }
   }
 
@@ -96,9 +63,6 @@ export class RaeRepository {
   }
 
   async clearCache() {
-    const kv = this.db.kv;
-    const op = kv.atomic();
-    await this.#delete(op);
-    await op.commit();
+    await this.#delete();
   }
 }
