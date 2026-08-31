@@ -4,9 +4,9 @@ import { AuthServiceAdapter } from "$infrastructure/adapters/auth.adapter.ts";
 import { notifyAdmin } from "$infrastructure/helpers/notify-admin.ts";
 import { DbContext } from "$infrastructure/kv/dbcontext.ts";
 import { green } from "@std/fmt/colors";
-import { route } from "@std/http/unstable-route";
 import type { Api, RawApi } from "grammy";
 import { type Bot, webhookCallback } from "grammy";
+import { Hono } from "hono";
 import z from "zod";
 
 import type { AppContextType } from "../../context.ts";
@@ -16,6 +16,7 @@ interface HttpServerContext {
   BOT_SECRET: string;
   auth: IAuthService;
   api: Api<RawApi>;
+  info: Deno.ServeHandlerInfo<Deno.NetAddr>;
 }
 
 async function handleCacheFlush(req: Request, ctx: HttpServerContext) {
@@ -50,65 +51,48 @@ export async function serveWebhook(
   port?: number,
 ) {
   console.log(green("Running on webhook mode"));
-  const handleUpdate = webhookCallback(bot, "std/http", {
+  const handleUpdate = webhookCallback(bot, "hono", {
     secretToken: BOT_SECRET,
   });
 
-  const context: HttpServerContext = {
-    BOT_SECRET,
-    auth: new AuthServiceAdapter(BOT_SECRET),
-    api: bot.api,
-  };
+  const auth = new AuthServiceAdapter(BOT_SECRET);
 
-  const routerHandler = route(
-    [
-      {
-        method: "POST",
-        pattern: new URLPattern({ pathname: "/cache/flush" }),
-        handler: (req) => handleCacheFlush(req, context),
-      },
-      {
-        method: "POST",
-        pattern: new URLPattern({ pathname: "/webhook" }),
-        handler: (req) => handleSetWebhook(req, context),
-      },
-      {
-        method: "POST",
-        pattern: new URLPattern({ pathname: "/" }),
-        handler: async (req) => {
-          const response = await handleUpdate(req);
+  const app = new Hono<{
+    Bindings: HttpServerContext & { info: Deno.ServeHandlerInfo<Deno.NetAddr> };
+  }>();
+  app.use((c, next) => {
+    measureDuration(c.env.info.completed).catch(() => {});
+    return next();
+  });
+  app.post("/cache/flush", (c) => handleCacheFlush(c.req.raw, c.env));
+  app.post("/webhook", (c) => handleSetWebhook(c.req.raw, c.env));
+  app.post("/", async (c) => {
+    const response = await handleUpdate(c);
 
-          if (response.status === 401) {
-            console.error("Unauthorized request", req);
-          } else if (response.status !== 200) {
-            console.error("Error handling update", req, response);
-          }
-          return response;
-        },
-      },
-    ],
-    () => Response.json({ error: "Not found" }, { status: 404 }),
-  );
+    if (response.status === 401) {
+      console.error("Unauthorized request", c.req.raw);
+    } else if (response.status !== 200) {
+      console.error("Error handling update", c.req.raw, response);
+    }
+    return response;
+  });
+  app.notFound((c) => c.json({ error: "Not found" }, 404));
+  app.onError((err, c) => {
+    console.error("Internal server error", err);
+    notifyAdmin(bot.api, "HTTP server", err).catch(() => {});
+    return c.text("Internal Server Error", 500);
+  });
 
   const server = Deno.serve({
-    handler: async (req, info) => {
-      measureDuration(info.completed).catch(() => {});
-
-      try {
-        return await routerHandler(req, info);
-      } catch (err) {
-        console.error("Internal server error", err);
-        notifyAdmin(bot.api, "HTTP server", err).catch(() => {});
-        return new Response("Internal Server Error", { status: 500 });
-      }
-    },
+    handler: (req, info) =>
+      app.fetch(req, {
+        auth,
+        BOT_SECRET,
+        api: bot.api,
+        info,
+      }),
     onListen(addr) {
       logStart(bot, addr);
-    },
-    onError(error) {
-      console.error("Internal server error", error);
-      notifyAdmin(bot.api, "HTTP server", error).catch(() => {});
-      return new Response("Internal Server Error", { status: 500 });
     },
     port,
   });

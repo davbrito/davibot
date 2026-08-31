@@ -1,7 +1,6 @@
 import { load } from "@std/dotenv";
-import * as fs from "@std/fs";
-import * as path from "@std/path";
-import * as iasync from "iteretijs/async";
+import fsNode from "node:fs/promises";
+import pathNode from "node:path";
 import { z } from "zod";
 import denoJson from "../deno.json" with { type: "json" };
 import { env } from "../lib/env.ts";
@@ -20,31 +19,25 @@ const dotenv = env(
 );
 
 async function createConfigsManifest(): Promise<string> {
-  const commandsPath = path.join(sourcePath, "interfaces", "commands");
+  const commandsPath = pathNode.join(sourcePath, "interfaces", "commands");
 
-  const commandFilenames = await Array.fromAsync(
-    iasync.map(
-      iasync.concat(
-        fs.expandGlob("*.{ts,tsx}", {
-          root: commandsPath,
-          includeDirs: false,
-        }),
-        fs.expandGlob("*/index.{ts,tsx}", {
-          root: commandsPath,
-          includeDirs: false,
-        }),
-      ),
-      (x) => path.relative(commandsPath, x.path),
-    ),
-  );
+  const globResult = fsNode.glob(["*.{ts,tsx}", "*/index.{ts,tsx}"], {
+    cwd: commandsPath,
+    withFileTypes: true,
+  });
 
   const commandEntries: string[] = [];
 
-  for (const commandPath of commandFilenames) {
-    const stem = path.basename(commandPath, path.extname(commandPath));
-    const commandName = stem === "index" ? path.dirname(commandPath) : stem;
-    const commandPathNormalized = commandPath.replace(path.SEPARATOR, "/");
-    const commandValue = `() => import("$interfaces/commands/${commandPathNormalized}")`;
+  for await (const entry of globResult) {
+    if (!entry.isFile()) continue;
+    const relativePath = pathNode.relative(
+      commandsPath,
+      pathNode.join(entry.parentPath, entry.name),
+    );
+
+    const stem = pathNode.basename(relativePath, pathNode.extname(relativePath));
+    const commandName = stem === "index" ? pathNode.basename(entry.parentPath) : stem;
+    const commandValue = `() => import("$interfaces/commands/${relativePath}")`;
     commandEntries.push(`"${commandName}": ${commandValue}`);
   }
 
@@ -53,10 +46,11 @@ async function createConfigsManifest(): Promise<string> {
     timestamp: new Date().toISOString(),
   };
 
+  const restrictions = await getRestrictions();
   return `
     import type { ManifestSchema, Restrictions } from "./src/manifest.ts";
 
-    const restrictions: Restrictions | undefined = ${await getRestrictions()};
+    const restrictions: Restrictions | undefined = ${restrictions};
 
     const manifest = {
         commands: {
@@ -72,13 +66,14 @@ async function createConfigsManifest(): Promise<string> {
 
 async function getRestrictions() {
   try {
-    let json;
+    let json: string;
 
     if (dotenv.RESTRICTIONS) {
       json = dotenv.RESTRICTIONS;
     } else {
-      json = await Deno.readTextFile(
+      json = await fsNode.readFile(
         new URL("../restrictions.json", import.meta.url),
+        { encoding: "utf-8" },
       );
     }
 
@@ -97,7 +92,7 @@ if (import.meta.main) {
 }
 
 async function generateManifestFile(): Promise<void> {
-  await fs.ensureFile(manifestPath);
   const code = await createConfigsManifest();
-  return await Deno.writeFile(manifestPath, formatCode(code), { create: true });
+  const formatStream = formatCode(code);
+  return await Deno.writeFile(manifestPath, formatStream, { create: true });
 }

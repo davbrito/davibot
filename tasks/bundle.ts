@@ -1,21 +1,19 @@
-import { parseArgs } from "@std/cli/parse-args";
-import { fromFileUrl } from "@std/path";
-import { z } from "zod";
+import { program } from "commander";
+import { fileURLToPath } from "node:url";
+import * as z from "zod";
 import { env } from "../lib/env.ts";
 
 const { MINIFY } = env({
   MINIFY: z.stringbool().default(true),
 });
 
-const { minify } = parseArgs(Deno.args, {
-  boolean: ["minify"],
-  default: {
-    minify: MINIFY,
-  },
-});
+program.option("--minify", "Enable minification", MINIFY);
+program.parse();
+
+const { minify } = program.opts<{ minify: boolean }>();
 
 const entry = import.meta.resolve("../src/main.tsx");
-const outdi = fromFileUrl(import.meta.resolve("../dist/"));
+const outdi = fileURLToPath(import.meta.resolve("../dist/"));
 
 const result = await Deno.bundle({
   entrypoints: [entry],
@@ -31,5 +29,5 @@ if (!result.success) {
   for (const error of result.errors) {
     console.error(error);
   }
-  Deno.exit(1);
+  process.exit(1);
 }

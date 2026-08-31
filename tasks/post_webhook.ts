@@ -1,5 +1,5 @@
 import { confirm, input, password } from "@inquirer/prompts";
-import { assert } from "@std/assert";
+import assert from "node:assert";
 import { load } from "@std/dotenv";
 import { Command } from "commander";
 import { Api } from "grammy";
@@ -95,24 +95,21 @@ async function confirmAction(): Promise<boolean> {
 }
 
 async function requireBotToken() {
-  const value =
-    program.opts().token ||
+  const value = program.opts().token ||
     (await password({ message: "Enter bot token: ", mask: "" }));
   assert(value, "BOT_TOKEN is not set");
   return value;
 }
 
 async function requireSecretToken() {
-  const value =
-    program.opts().secret ||
+  const value = program.opts().secret ||
     (await password({ message: "Enter secret token: ", mask: "" }));
   assert(value, "BOT_SECRET is not set");
   return value;
 }
 
 async function requireWebhookUrl() {
-  const value =
-    program.opts().url ||
+  const value = program.opts().url ||
     (await input({ message: "Enter webhook url: ", required: true }));
   assert(value, "WEBHOOK_URL is not set");
   return value;
