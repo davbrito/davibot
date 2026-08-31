@@ -1,5 +1,8 @@
-import "@std/dotenv/load";
+import "dotenv/config";
+import { spawnSync } from "node:child_process";
+
 import { z } from "zod";
+
 import { env } from "../lib/env.ts";
 
 const { DENO_DEPLOY_TOKEN, DENO_DEPLOY_PROJECT } = env({
@@ -7,23 +10,24 @@ const { DENO_DEPLOY_TOKEN, DENO_DEPLOY_PROJECT } = env({
   DENO_DEPLOY_PROJECT: z.string().min(1),
 });
 
-const command = new Deno.Command("deployctl", {
-  args: [
+const command = spawnSync(
+  "deployctl",
+  [
     "deploy",
     "--prod",
     `--project=${DENO_DEPLOY_PROJECT}`,
     `--token=${DENO_DEPLOY_TOKEN}`,
   ],
-  stdin: "inherit",
-  stdout: "inherit",
-  stderr: "inherit",
-});
+  {
+    stdio: "inherit",
+  },
+);
 
-const { success, code } = await command.spawn().status;
+const { status, error } = command;
 
-if (!success) {
-  console.error(`deployctl exited with code ${code}`);
-  Deno.exit(code);
+if (error) {
+  console.error(`deployctl exited with code ${status}`);
+  process.exit(status);
 }
 
-Deno.exit(0);
+process.exit(0);

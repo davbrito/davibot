@@ -1,13 +1,10 @@
+import "dotenv/config";
+import assert from "node:assert";
+
 import { confirm, input, password } from "@inquirer/prompts";
-import { assert } from "@std/assert";
-import { load } from "@std/dotenv";
+import colors from "chalk";
 import { Command } from "commander";
 import { Api } from "grammy";
-
-await load({
-  envPath: Deno.env.get("ENV") ? `.env.${Deno.env.get("ENV")}` : ".env",
-  export: true,
-});
 
 let api: Api;
 
@@ -27,7 +24,7 @@ program
   .description("Delete the existing webhook")
   .action(async () => {
     if (!(await confirmAction())) {
-      console.log("Action canceled.");
+      console.log(colors.yellow("Action canceled."));
       return;
     }
 
@@ -42,15 +39,15 @@ program
     const secret = await requireSecretToken();
 
     if (!(await confirmAction())) {
-      console.log("Action canceled.");
+      console.log(colors.yellow("Action canceled."));
       return;
     }
 
     const ok = await api.setWebhook(webhookUrl, { secret_token: secret });
     if (ok) {
-      console.log("Webhook set successfully.");
+      console.log(colors.green("Webhook set successfully."));
     } else {
-      console.error("Failed to set webhook.");
+      console.error(colors.red("Failed to set webhook."));
     }
   });
 
@@ -65,21 +62,21 @@ program
 program.on("option:read-env", function () {
   const ops = program.opts();
   if (!ops.readEnv) return;
-  console.log("Reading options from environment variables...");
+  console.log(colors.dim("Reading options from environment variables..."));
 
-  if (!ops.url && Deno.env.get("WEBHOOK_URL")) {
-    program.setOptionValue("url", Deno.env.get("WEBHOOK_URL"));
-    console.log("Using WEBHOOK_URL from environment variables");
+  if (!ops.url && process.env.WEBHOOK_URL) {
+    program.setOptionValue("url", process.env.WEBHOOK_URL);
+    console.log(colors.dim("Using WEBHOOK_URL from environment variables"));
   }
 
-  if (!ops.secret && Deno.env.get("BOT_SECRET")) {
-    program.setOptionValue("secret", Deno.env.get("BOT_SECRET"));
-    console.log("Using BOT_SECRET from environment variables");
+  if (!ops.secret && process.env.BOT_SECRET) {
+    program.setOptionValue("secret", process.env.BOT_SECRET);
+    console.log(colors.dim("Using BOT_SECRET from environment variables"));
   }
 
-  if (!ops.token && Deno.env.get("BOT_TOKEN")) {
-    program.setOptionValue("token", Deno.env.get("BOT_TOKEN"));
-    console.log("Using BOT_TOKEN from environment variables");
+  if (!ops.token && process.env.BOT_TOKEN) {
+    program.setOptionValue("token", process.env.BOT_TOKEN);
+    console.log(colors.dim("Using BOT_TOKEN from environment variables"));
   }
 });
 
@@ -91,7 +88,8 @@ async function confirmAction(): Promise<boolean> {
   console.log(
     `You are about to modify the webhook for bot: ${botInfo.username}`,
   );
-  return await confirm({ message: "Are you sure?" });
+  const confirmation = await confirm({ message: "Are you sure?" });
+  return confirmation;
 }
 
 async function requireBotToken() {

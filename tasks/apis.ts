@@ -1,6 +1,8 @@
-import { createClient, type UserConfig } from "@hey-api/openapi-ts";
-import * as fs from "@std/fs";
-import * as path from "@std/path";
+import * as fs from "node:fs";
+import * as path from "node:path";
+
+import { createClient } from "@hey-api/openapi-ts";
+
 import { projectRoot } from "./constants.ts";
 
 export async function generateApis() {
@@ -12,10 +14,10 @@ export async function generateApis() {
   };
 
   const apisDir = path.join(projectRoot, "apis.gen");
-  await fs.ensureDir(apisDir);
+  await fs.promises.mkdir(apisDir, { recursive: true });
 
   await createClient(
-    Object.entries(apis).map(([name, { schema: url }]): UserConfig => ({
+    Object.entries(apis).map(([name, { schema: url }]) => ({
       input: url,
       output: {
         path: path.join(apisDir, name),
@@ -25,7 +27,7 @@ export async function generateApis() {
       },
       plugins: [
         { name: "@hey-api/sdk", validator: "zod" },
-        { name: "@hey-api/client-fetch" },
+        { name: "@hey-api/client-fetch", validator: "zod" },
         { name: "zod" },
       ],
     })),
