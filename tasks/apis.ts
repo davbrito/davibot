@@ -1,31 +1,7 @@
+import { createClient, type UserConfig } from "@hey-api/openapi-ts";
 import * as fs from "@std/fs";
 import * as path from "@std/path";
-import ts from "typescript";
 import { projectRoot } from "./constants.ts";
-import { formatCode } from "./utils.ts";
-import { createClient, type UserConfig } from "@hey-api/openapi-ts";
-
-function removeNeverProperties(node: ts.Node) {
-  if (
-    ts.isPropertySignature(node) &&
-    node.type?.kind === ts.SyntaxKind.NeverKeyword
-  ) {
-    return [];
-  }
-
-  const result = ts.visitEachChild(node, removeNeverProperties, undefined);
-
-  if (
-    ts.isPropertySignature(result) &&
-    result.type &&
-    ts.isTypeLiteralNode(result.type) &&
-    result.type.members.length === 0
-  ) {
-    return [];
-  }
-
-  return result;
-}
 
 export async function generateApis() {
   const xkcdSchemaUrl =

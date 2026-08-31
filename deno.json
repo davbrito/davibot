@@ -85,7 +85,6 @@
     "react": "npm:react@^19.2.8",
     "react-dom": "npm:react-dom@^19.2.8",
     "telegraf-middleware-console-time": "npm:telegraf-middleware-console-time@^3.0.0",
-    "typescript": "npm:typescript@^6.0.3",
     "zod": "npm:zod@^4.5.4"
   },
   "deploy": {
