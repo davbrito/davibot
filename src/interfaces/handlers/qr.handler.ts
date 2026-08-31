@@ -1,4 +1,4 @@
-import { parseArgs } from "@std/cli";
+import { Command } from "commander";
 import { CommandContext } from "grammy";
 import { AppContextType } from "../../context.ts";
 
@@ -10,9 +10,7 @@ export async function qrCommandHandler(ctx: CommandContext<AppContextType>) {
     return;
   }
 
-  const options = getOptions(text);
-
-  const inputValue = String(options._[0]);
+  const { options, inputValue } = qrCommand(text);
 
   const qrCodeUrl = getQrUrl(inputValue, options);
 
@@ -36,22 +34,30 @@ export async function qrCommandHandler(ctx: CommandContext<AppContextType>) {
   }
 }
 
-function getOptions(text: string) {
-  return parseArgs(parseToArgv(text), {
-    string: ["color", "bgcolor", "format"],
-    alias: {
-      m: "margin",
-      c: "color",
-      b: "bgcolor",
-      f: "format",
-    },
-    default: {
-      format: "png",
-    },
-  });
+function qrCommand(text: string) {
+  const argv = parseToArgv(text);
+  const command = new Command()
+    .option("-m, --margin <number>", "Margin around the QR code")
+    .option("-c, --color <hex>", "Color of the QR code in hex format")
+    .option(
+      "-b, --bgcolor <hex>",
+      "Background color of the QR code in hex format",
+    )
+    .option(
+      "-f, --format <format>",
+      "Image format (png, jpg, webp, gif, svg, eps)",
+      "png",
+    )
+    .argument("<value>", "Value to encode in the QR code")
+    .parse(argv, { from: "user" });
+
+  const options = command.opts();
+  const [inputValue] = command.processedArgs;
+
+  return { options, inputValue };
 }
 
-type QrOptions = ReturnType<typeof getOptions>;
+type QrOptions = ReturnType<typeof qrCommand>["options"];
 
 function getQrUrl(value: string, options: QrOptions): string {
   const searchParams = new URLSearchParams({

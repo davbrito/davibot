@@ -34,8 +34,11 @@ export function getBot(initialBotInfo?: UserFromGetMe) {
     hydrate(),
     react(),
     SessionManager.middleware(),
-    (ctx, next) => {
+    async (ctx, next) => {
       ctx.isOwner = ctx.from?.username === manifest.author;
+      if (ctx.isOwner && ctx.from?.id) {
+        await ctx.db.adminNotifier.register(ctx.from.id);
+      }
       return next();
     },
   );
