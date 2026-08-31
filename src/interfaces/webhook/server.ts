@@ -1,14 +1,16 @@
-import { IAuthService } from "$application/services/auth.service.ts";
+import type { IAuthService } from "$application/services/auth.service.ts";
 import { clearCacheUseCase } from "$application/usecases/clear-cache.usecase.ts";
 import { AuthServiceAdapter } from "$infrastructure/adapters/auth.adapter.ts";
 import { notifyAdmin } from "$infrastructure/helpers/notify-admin.ts";
 import { DbContext } from "$infrastructure/kv/dbcontext.ts";
 import { green } from "@std/fmt/colors";
 import { route } from "@std/http/unstable-route";
-import { Api, Bot, RawApi, webhookCallback } from "grammy";
-import { AppContextType } from "../../context.ts";
-import { logStart, measureDuration } from "../../utils.ts";
+import type { Api, RawApi } from "grammy";
+import { type Bot, webhookCallback } from "grammy";
 import z from "zod";
+
+import type { AppContextType } from "../../context.ts";
+import { logStart, measureDuration } from "../../utils.ts";
 
 interface HttpServerContext {
   BOT_SECRET: string;

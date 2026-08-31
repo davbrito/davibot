@@ -2,8 +2,9 @@ import { codeBlock } from "$interfaces/helpers/markdown.ts";
 import { errorBoundary } from "$interfaces/middlewares/error-handler.middleware.tsx";
 import manifest from "$manifest";
 import { sample } from "@std/random";
-import { Bot, CommandMiddleware, Composer } from "grammy";
-import { AppContextType } from "../context.ts";
+import type { Bot, CommandMiddleware, Composer } from "grammy";
+
+import type { AppContextType } from "../context.ts";
 
 type MaybePromise<T> = T | Promise<T>;
 export type SetupFunction = (

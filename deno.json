@@ -26,7 +26,8 @@
     "strict": true,
     "strictNullChecks": true,
     "noImplicitAny": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true
   },
   "tasks": {
     "manifest": "deno run -A ./tasks/dev.ts",

@@ -1,4 +1,4 @@
-import { ExternalApis } from "../adapters/api.adapter.ts";
+import type { ExternalApis } from "../adapters/api.adapter.ts";
 
 const randomXkcdUrl = "https://c.xkcd.com/random/comic/";
 

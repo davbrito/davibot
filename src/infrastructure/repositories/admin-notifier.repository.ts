@@ -1,4 +1,4 @@
-import { DbContext } from "../kv/dbcontext.ts";
+import type { DbContext } from "../kv/dbcontext.ts";
 
 const ADMIN_CHAT_IDS_KEY = ["admin_chat_ids"];
 

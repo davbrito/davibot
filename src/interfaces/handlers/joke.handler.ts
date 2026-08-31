@@ -1,4 +1,4 @@
-import { AppContextType } from "../../context.ts";
+import type { AppContextType } from "../../context.ts";
 
 export async function jokeCommandHandler(ctx: AppContextType) {
   const joke = await fetchJoke();

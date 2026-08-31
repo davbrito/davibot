@@ -4,9 +4,11 @@ import { getBot } from "$infrastructure/bot.ts";
 import { setupCommands } from "$infrastructure/commands.ts";
 import { DbContext } from "$infrastructure/kv/dbcontext.ts";
 import { serveWebhook } from "$interfaces/webhook/server.ts";
-import { Api, Bot, Composer, RawApi } from "grammy";
+import type { Api, Bot, RawApi } from "grammy";
+import { Composer } from "grammy";
+
 import { BOT_SECRET, runAsWebhook } from "./config.ts";
-import { AppContextType } from "./context.ts";
+import type { AppContextType } from "./context.ts";
 import { logStart } from "./utils.ts";
 
 async function main() {

@@ -1,6 +1,7 @@
-import { Enhance } from "grammy";
-import { SessionData } from "../../session/sessions.ts";
-import { DbContext } from "./dbcontext.ts";
+import type { Enhance } from "grammy";
+
+import type { SessionData } from "../../session/sessions.ts";
+import type { DbContext } from "./dbcontext.ts";
 
 export type InternalSessionData = Enhance<SessionData>;
 

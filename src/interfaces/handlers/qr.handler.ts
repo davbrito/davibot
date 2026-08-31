@@ -1,6 +1,7 @@
 import { Command } from "commander";
-import { CommandContext } from "grammy";
-import { AppContextType } from "../../context.ts";
+import type { CommandContext } from "grammy";
+
+import type { AppContextType } from "../../context.ts";
 
 export async function qrCommandHandler(ctx: CommandContext<AppContextType>) {
   const text = ctx.match;

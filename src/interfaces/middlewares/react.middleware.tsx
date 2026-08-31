@@ -1,6 +1,6 @@
+import type { MessageXFragment } from "@grammyjs/hydrate/data/message.ts";
 import type { Context, MiddlewareFn } from "grammy";
-import { MessageXFragment } from "@grammyjs/hydrate/data/message.ts";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 type ReplyWithReact = Context["reply"] extends (
