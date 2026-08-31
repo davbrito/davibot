@@ -3,7 +3,7 @@ import * as path from "@std/path";
 import ts from "typescript";
 import { projectRoot } from "./constants.ts";
 import { formatCode } from "./utils.ts";
-import { createClient } from "@hey-api/openapi-ts";
+import { createClient, type UserConfig } from "@hey-api/openapi-ts";
 
 function removeNeverProperties(node: ts.Node) {
   if (
@@ -39,7 +39,7 @@ export async function generateApis() {
   await fs.ensureDir(apisDir);
 
   await createClient(
-    Object.entries(apis).map(([name, { schema: url }]) => ({
+    Object.entries(apis).map(([name, { schema: url }]): UserConfig => ({
       input: url,
       output: {
         path: path.join(apisDir, name),
@@ -49,7 +49,7 @@ export async function generateApis() {
       },
       plugins: [
         { name: "@hey-api/sdk", validator: "zod" },
-        { name: "@hey-api/client-fetch", validator: "zod" },
+        { name: "@hey-api/client-fetch" },
         { name: "zod" },
       ],
     })),
