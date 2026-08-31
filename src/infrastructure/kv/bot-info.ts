@@ -1,4 +1,4 @@
-import type { UserFromGetMe } from "@grammyjs/types";
+import type { UserFromGetMe } from "grammy/types";
 
 import type { DbContext } from "./dbcontext.ts";
 
@@ -6,11 +6,10 @@ export class BotInfoRepository {
   constructor(public readonly db: DbContext) {}
 
   async get() {
-    const botInfo = await this.db.kv.get<UserFromGetMe>(["bot-info"]);
-    return botInfo.value;
+    return await this.db.kv.get<UserFromGetMe>("bot-info", "json");
   }
 
   async set(value: UserFromGetMe) {
-    await this.db.kv.set(["bot-info"], value);
+    await this.db.kv.put("bot-info", JSON.stringify(value));
   }
 }

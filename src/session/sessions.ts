@@ -1,8 +1,13 @@
 import { HiSession } from "$application/services/hi-session.ts";
 import { DbContext } from "$infrastructure/kv/dbcontext.ts";
 import type { InternalSessionData } from "$infrastructure/kv/session.ts";
-import { Composer, enhanceStorage, lazySession } from "grammy";
-import type { LazySessionFlavor, StorageAdapter } from "grammy";
+import {
+  Composer,
+  enhanceStorage,
+  lazySession,
+  type LazySessionFlavor,
+  type StorageAdapter,
+} from "grammy";
 import { z } from "zod";
 
 import type { AppContextType } from "../context.ts";

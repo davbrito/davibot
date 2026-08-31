@@ -1,6 +1,6 @@
 import type { DbContext } from "../kv/dbcontext.ts";
 
-const ADMIN_CHAT_IDS_KEY = ["admin_chat_ids"];
+const ADMIN_CHAT_IDS_KEY = "admin_chat_ids";
 
 export class AdminNotifierRepository {
   constructor(private readonly db: DbContext) {}
@@ -9,11 +9,10 @@ export class AdminNotifierRepository {
     const ids = await this.getIds();
     if (ids.includes(chatId)) return;
     ids.push(chatId);
-    await this.db.kv.set(ADMIN_CHAT_IDS_KEY, ids);
+    await this.db.kv.put(ADMIN_CHAT_IDS_KEY, JSON.stringify(ids));
   }
 
   async getIds(): Promise<number[]> {
-    const entry = await this.db.kv.get<number[]>(ADMIN_CHAT_IDS_KEY);
-    return entry.value ?? [];
+    return (await this.db.kv.get<number[]>(ADMIN_CHAT_IDS_KEY, "json")) ?? [];
   }
 }

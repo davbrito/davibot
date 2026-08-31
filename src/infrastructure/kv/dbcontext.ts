@@ -1,4 +1,5 @@
-import { DENO_KV_URL } from "../../config.ts";
+import { env } from "cloudflare:workers";
+
 import { AdminNotifierRepository } from "../repositories/admin-notifier.repository.ts";
 import { RaeRepository } from "../repositories/rae-html.repository.ts";
 import { XkcdSubscriptionRepository } from "../repositories/xkcd-subscription.repository.ts";
@@ -6,38 +7,47 @@ import { BotInfoRepository } from "./bot-info.ts";
 import { SessionRepository } from "./session.ts";
 
 export class DbContext {
-  #kv: Deno.Kv | undefined;
-
   readonly adminNotifier = new AdminNotifierRepository(this);
   readonly botInfo = new BotInfoRepository(this);
   readonly rae = new RaeRepository(this);
   readonly session = new SessionRepository(this);
   readonly xkcdSubscription = new XkcdSubscriptionRepository(this);
 
-  constructor(kv: Deno.Kv) {
-    this.#kv = kv;
-  }
-
-  static async connect() {
-    return new DbContext(await Deno.openKv(DENO_KV_URL));
+  static connect() {
+    return new DbContext();
   }
 
   static async use<T>(callback: (db: DbContext) => T | Promise<T>): Promise<T> {
-    using db = await DbContext.connect();
-    return await callback(db);
+    return await callback(DbContext.connect());
   }
 
   get kv() {
-    if (!this.#kv) throw new Error("you are using a disposed connection");
-    return this.#kv;
+    return env.KV;
   }
 
-  dispose() {
-    this.#kv?.close();
-    this.#kv = undefined;
+  [Symbol.dispose]() {}
+
+  async *listKVKeys(prefix: string) {
+    let result = await this.kv.list({
+      prefix,
+      limit: 500,
+    });
+
+    while (!result.list_complete) {
+      yield* result.keys;
+      result = await this.kv.list<Uint8Array<ArrayBuffer>>({
+        prefix,
+        cursor: result.cursor,
+      });
+    }
   }
 
-  [Symbol.dispose]() {
-    this.dispose();
+  async *listKVPairs<Value>(prefix: string) {
+    for await (const { name } of this.listKVKeys(prefix)) {
+      const value = await this.kv.get<Value>(name, "json");
+      if (value != null) {
+        yield [name, value] as const;
+      }
+    }
   }
 }

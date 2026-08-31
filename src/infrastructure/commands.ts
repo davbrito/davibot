@@ -1,10 +1,10 @@
 import { codeBlock } from "$interfaces/helpers/markdown.ts";
-import { errorBoundary } from "$interfaces/middlewares/error-handler.middleware.tsx";
 import manifest from "$manifest";
 import { sample } from "@std/random";
-import type { Bot, CommandMiddleware, Composer } from "grammy";
+import type { Bot, Composer } from "grammy";
+import { type CommandMiddleware } from "grammy";
+import type { BotCommand } from "grammy/types";
 
-import { AUTHOR } from "../config.ts";
 import type { AppContextType } from "../context.ts";
 
 type MaybePromise<T> = T | Promise<T>;
@@ -13,7 +13,7 @@ export type SetupFunction = (
   bot: Bot<AppContextType>,
 ) => MaybePromise<void>;
 
-type AppComposer = Composer<AppContextType>;
+export type AppComposer = Composer<AppContextType>;
 
 export interface CommandConfig {
   name: string;
@@ -37,10 +37,10 @@ export const setupCommands: SetupFunction = async (composer, bot) => {
     ...(await loadCommandConfigs()),
   ];
 
-  composer.command("about", (ctx) => ctx.reply("Author: @" + AUTHOR));
+  composer.command("about", (ctx) => ctx.reply("Author: @" + ctx.env.AUTHOR));
 
   composer.command("buildinfo", (ctx, next) => {
-    if (ctx.from?.username === AUTHOR) {
+    if (ctx.isOwner) {
       ctx.reply(
         "Build info:\n" +
           codeBlock(JSON.stringify(manifest.buildMetadata, null, 2), "json"),
@@ -56,30 +56,16 @@ export const setupCommands: SetupFunction = async (composer, bot) => {
     await ctx.reply("Bye");
   });
 
+  composer.command("updatecommands", async (ctx, next) => {
+    if (!ctx.isOwner) {
+      return next();
+    }
+
+    await updateCommands(bot);
+    await ctx.reply("Commands updated");
+  });
+
   miscellaneousCommands(composer);
-
-  bot.errorBoundary(errorBoundary).use(composer);
-
-  // retry(
-  //   () =>
-  //     bot.api.setMyCommands(
-  //       commandConfigs
-  //         .filter((command) => command.command)
-  //         .map((command) => ({
-  //           command: command.command,
-  //           description: command.description || "",
-  //         })),
-  //     ),
-  //   {
-  //     maxAttempts: 3,
-  //   },
-  // )
-  //   .then(() => {
-  //     console.log("Commands set up successfully");
-  //   })
-  //   .catch((err) => {
-  //     console.error("Error setting up commands:", err);
-  //   });
 
   async function loadCommandConfigs(): Promise<CommandConfig[]> {
     const commands: CommandConfig[] = [];
@@ -109,6 +95,19 @@ export const setupCommands: SetupFunction = async (composer, bot) => {
 
 export function getCommandConfigs() {
   return commandConfigs;
+}
+
+function updateCommands(bot: Bot<AppContextType>) {
+  return bot.api.setMyCommands(
+    commandConfigs
+      .filter((command) => command.command)
+      .map(
+        (command): BotCommand => ({
+          command: command.name,
+          description: command.description || "",
+        }),
+      ),
+  );
 }
 
 function miscellaneousCommands(composer: AppComposer) {

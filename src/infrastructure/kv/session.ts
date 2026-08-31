@@ -9,8 +9,11 @@ export class SessionRepository {
   constructor(private readonly db: DbContext) {}
 
   async getSessionRaw(key: string): Promise<InternalSessionData | undefined> {
-    const data = await this.db.kv.get<InternalSessionData>(["session", key]);
-    return data.value || undefined;
+    const data = await this.db.kv.get<InternalSessionData>(
+      `session:${key}`,
+      "json",
+    );
+    return data ?? undefined;
   }
 
   async getSession(key: string): Promise<SessionData | undefined> {
@@ -19,18 +22,18 @@ export class SessionRepository {
   }
 
   async setSession(key: string, value: InternalSessionData): Promise<void> {
-    await this.db.kv.set(["session", key], value);
+    await this.db.kv.put(`session:${key}`, JSON.stringify(value));
   }
 
   async deleteSession(key: string): Promise<void> {
-    await this.db.kv.delete(["session", key]);
+    await this.db.kv.delete(`session:${key}`);
   }
 
   async *listSessionsRaw(): AsyncIterable<[string, InternalSessionData]> {
-    for await (const { key, value } of this.db.kv.list<InternalSessionData>({
-      prefix: ["session"],
-    })) {
-      yield [key[1] as string, value];
+    for await (const [key, value] of this.db.listKVPairs<InternalSessionData>(
+      "session:",
+    )) {
+      yield [key.slice("session:".length), value];
     }
   }
 

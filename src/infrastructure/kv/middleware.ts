@@ -8,7 +8,7 @@ export interface DbFlavor {
 
 export function withDb<C extends Context>(): MiddlewareFn<C & DbFlavor> {
   return async (ctx, next) => {
-    using db = await DbContext.connect();
+    using db = DbContext.connect();
     ctx.db = db;
     return await next();
   };
