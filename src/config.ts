@@ -2,6 +2,7 @@ import { load } from "@std/dotenv";
 import { z } from "zod";
 
 export const {
+  AUTHOR,
   BOT_SECRET,
   BOT_TOKEN,
   WEBHOOK_MODE,
@@ -10,6 +11,7 @@ export const {
   DEBUG,
 } = await parseEnv(
   z.object({
+    AUTHOR: z.string({ error: "AUTHOR is required" }).nonempty(),
     BOT_TOKEN: z.string({ error: "BOT_TOKEN is required" }).nonempty(),
     BOT_SECRET: z.string({ error: "BOT_SECRET is required" }).nonempty(),
     DENO_DEPLOYMENT_ID: z.unknown().optional(),

@@ -1,13 +1,12 @@
 import { withApis } from "$interfaces/middlewares/api.middleware.ts";
 import { react } from "$interfaces/middlewares/react.middleware.tsx";
-import manifest from "$manifest";
 import { autoRetry } from "@grammyjs/auto-retry";
 import { hydrate } from "@grammyjs/hydrate/plugin.ts";
 import type { UserFromGetMe } from "@grammyjs/types";
 import { Bot } from "grammy";
 import { generateUpdateMiddleware } from "telegraf-middleware-console-time";
 
-import { BOT_TOKEN, runAsWebhook } from "../config.ts";
+import { AUTHOR, BOT_TOKEN, runAsWebhook } from "../config.ts";
 import type { AppContextType } from "../context.ts";
 import { SessionManager } from "../session/sessions.ts";
 import { withDb } from "./kv/middleware.ts";
@@ -36,7 +35,7 @@ export function getBot(initialBotInfo?: UserFromGetMe) {
     react(),
     SessionManager.middleware(),
     async (ctx, next) => {
-      ctx.isOwner = ctx.from?.username === manifest.author;
+      ctx.isOwner = ctx.from?.username === AUTHOR;
       if (ctx.isOwner && ctx.from?.id) {
         await ctx.db.adminNotifier.register(ctx.from.id);
       }

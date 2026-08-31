@@ -15,7 +15,6 @@ interface CommandModule {
 }
 
 export interface ManifestSchema {
-  author: string;
   commands: {
     [key: string]: SetupFunction<CommandModule>;
   };
