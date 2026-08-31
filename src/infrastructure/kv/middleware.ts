@@ -2,11 +2,11 @@ import type { Context, MiddlewareFn } from "grammy";
 
 import { DbContext } from "./dbcontext.ts";
 
-export interface DbFlavor {
+export type DbFlavor<C extends Context> = C & {
   db: DbContext;
-}
+};
 
-export function withDb<C extends Context>(): MiddlewareFn<C & DbFlavor> {
+export function withDb<C extends Context>(): MiddlewareFn<DbFlavor<C>> {
   return async (ctx, next) => {
     using db = await DbContext.connect();
     ctx.db = db;

@@ -2,7 +2,7 @@ import { HiSession } from "$application/services/hi-session.ts";
 import { DbContext } from "$infrastructure/kv/dbcontext.ts";
 import type { InternalSessionData } from "$infrastructure/kv/session.ts";
 import { Composer, enhanceStorage, lazySession } from "grammy";
-import type { LazySessionFlavor, StorageAdapter } from "grammy";
+import type { Context, LazySessionFlavor, StorageAdapter } from "grammy";
 import { z } from "zod";
 
 import type { AppContextType } from "../context.ts";
@@ -14,9 +14,12 @@ const sessionDataSchema = z.looseObject({
 
 export type SessionData = z.infer<typeof sessionDataSchema>;
 
-export type SessionManagerFlavor = LazySessionFlavor<SessionData> & {
-  sessionManager: SessionManager;
-};
+export type SessionManagerFlavor<C extends Context> =
+  & C
+  & LazySessionFlavor<SessionData>
+  & {
+    sessionManager: SessionManager;
+  };
 
 export class SessionManager {
   #ctx: AppContextType;

@@ -6,13 +6,10 @@ import type { Context } from "grammy";
 
 import type { SessionManagerFlavor } from "./session/sessions.ts";
 
-interface BaseAppContextType
-  extends Context,
-    SessionManagerFlavor,
-    ReactFlavor,
-    ApisFlavor,
-    DbFlavor {
+interface BaseAppContextType extends Context {
   isOwner: boolean;
 }
 
-export type AppContextType = HydrateFlavor<BaseAppContextType>;
+export type AppContextType = HydrateFlavor<
+  DbFlavor<ApisFlavor<ReactFlavor<SessionManagerFlavor<BaseAppContextType>>>>
+>;

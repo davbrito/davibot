@@ -6,24 +6,22 @@ import { renderToStaticMarkup } from "react-dom/server";
 type ReplyWithReact = Context["reply"] extends (
   text: string,
   ...args: infer A
-) => infer R
-  ? (node: ReactNode, ...args: A) => R
+) => infer R ? (node: ReactNode, ...args: A) => R
   : never;
 
 type EditMessageTextWithReact = MessageXFragment["editText"] extends (
   text: string,
   ...args: infer A
-) => infer R
-  ? (message: MessageXFragment, node: ReactNode, ...args: A) => R
+) => infer R ? (message: MessageXFragment, node: ReactNode, ...args: A) => R
   : never;
 
-export interface ReactFlavor {
+export type ReactFlavor<C extends Context> = C & {
   replyWithReact: ReplyWithReact;
   renderReactText: (node: ReactNode) => string;
   editMessageTextWithReact: EditMessageTextWithReact;
-}
+};
 
-export function react<C extends Context>(): MiddlewareFn<C & ReactFlavor> {
+export function react<C extends Context>(): MiddlewareFn<ReactFlavor<C>> {
   return (ctx, next) => {
     ctx.renderReactText = (node) => renderToStaticMarkup(node);
 
