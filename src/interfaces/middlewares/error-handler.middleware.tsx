@@ -2,6 +2,7 @@ import { BotError, NextFunction } from "grammy";
 import type { ReactNode } from "react";
 import { DEBUG } from "../../config.ts";
 import { AppContextType } from "../../context.ts";
+import { notifyAdmin } from "../../infrastructure/helpers/notify-admin.ts";
 
 export async function errorBoundary(
   error: BotError<AppContextType>,
@@ -10,6 +11,8 @@ export async function errorBoundary(
   const { ctx } = error;
 
   console.error("Error occurred:", error);
+
+  await notifyAdmin(ctx.api, "errorBoundary", error);
 
   // solo si es mensaje
   if (ctx.message) {

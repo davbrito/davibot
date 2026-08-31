@@ -1,4 +1,5 @@
 import { DENO_KV_URL } from "../../config.ts";
+import { AdminNotifierRepository } from "../repositories/admin-notifier.repository.ts";
 import { RaeRepository } from "../repositories/rae-html.repository.ts";
 import { XkcdSubscriptionRepository } from "../repositories/xkcd-subscription.repository.ts";
 import { BotInfoRepository } from "./bot-info.ts";
@@ -7,6 +8,7 @@ import { SessionRepository } from "./session.ts";
 export class DbContext {
   #kv: Deno.Kv | undefined;
 
+  readonly adminNotifier = new AdminNotifierRepository(this);
   readonly botInfo = new BotInfoRepository(this);
   readonly rae = new RaeRepository(this);
   readonly session = new SessionRepository(this);

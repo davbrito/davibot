@@ -1,6 +1,7 @@
 import { IAuthService } from "$application/services/auth.service.ts";
 import { clearCacheUseCase } from "$application/usecases/clear-cache.usecase.ts";
 import { AuthServiceAdapter } from "$infrastructure/adapters/auth.adapter.ts";
+import { notifyAdmin } from "$infrastructure/helpers/notify-admin.ts";
 import { DbContext } from "$infrastructure/kv/dbcontext.ts";
 import { green } from "@std/fmt/colors";
 import { route } from "@std/http/unstable-route";
@@ -95,6 +96,7 @@ export async function serveWebhook(
         return await routerHandler(req, info);
       } catch (err) {
         console.error("Internal server error", err);
+        notifyAdmin(bot.api, "HTTP server", err).catch(() => {});
         return new Response("Internal Server Error", { status: 500 });
       }
     },
@@ -103,6 +105,7 @@ export async function serveWebhook(
     },
     onError(error) {
       console.error("Internal server error", error);
+      notifyAdmin(bot.api, "HTTP server", error).catch(() => {});
       return new Response("Internal Server Error", { status: 500 });
     },
     port,
