@@ -1,5 +1,6 @@
 import manifest from "$manifest";
-import type { Api, Bot, RawApi } from "grammy";
+import type { Api, RawApi } from "grammy";
+import type { Bot } from "grammy";
 
 import type { AppContextType } from "../../context.ts";
 import { DbContext } from "../kv/dbcontext.ts";

@@ -1,19 +1,19 @@
 import { getXkcdUsecase } from "$application/usecases/get-xkcd.usecase.ts";
 import { getExternalApis } from "$infrastructure/adapters/api.adapter.ts";
-import { getBot } from "$infrastructure/bot.ts";
+import { getApi, getBot } from "$infrastructure/bot.ts";
 import { notifyAdmin } from "$infrastructure/helpers/notify-admin.ts";
 import { DbContext } from "$infrastructure/kv/dbcontext.ts";
 import { XkcdRepository } from "$infrastructure/repositories/xkcd.repository.ts";
 import { renderToStaticMarkup } from "react-dom/server";
+
 import { createXkcdResponse } from "../helpers/xkcd-response.helper.tsx";
 
 export async function dailyXkcdJobHandler() {
-  const bot = getBot();
-
   try {
     const apis = getExternalApis();
-    using db = await DbContext.connect();
+    const db = DbContext.connect();
     const xkcdRepository = new XkcdRepository(apis);
+    const bot = getBot();
 
     const comic = await getXkcdUsecase({ text: "current", xkcdRepository });
     const response = createXkcdResponse(comic);
@@ -30,7 +30,7 @@ export async function dailyXkcdJobHandler() {
 
     console.log(`Sent ${count} XKCD updates.`);
   } catch (error) {
-    console.error("Error running dailyXkcdJobHandler:", error);
-    await notifyAdmin(bot.api, "dailyXkcdJobHandler", error);
+    console.error("dailyXkcdJobHandler failed:", error);
+    await notifyAdmin(getApi(), "dailyXkcdJobHandler", error);
   }
 }
