@@ -4,6 +4,7 @@ import manifest from "$manifest";
 import { sample } from "@std/random";
 import type { Bot, CommandMiddleware, Composer } from "grammy";
 
+import { AUTHOR } from "../config.ts";
 import type { AppContextType } from "../context.ts";
 
 type MaybePromise<T> = T | Promise<T>;
@@ -36,10 +37,10 @@ export const setupCommands: SetupFunction = async (composer, bot) => {
     ...(await loadCommandConfigs()),
   ];
 
-  composer.command("about", (ctx) => ctx.reply("Author: @" + manifest.author));
+  composer.command("about", (ctx) => ctx.reply("Author: @" + AUTHOR));
 
   composer.command("buildinfo", (ctx, next) => {
-    if (ctx.from?.username === manifest.author) {
+    if (ctx.from?.username === AUTHOR) {
       ctx.reply(
         "Build info:\n" +
           codeBlock(JSON.stringify(manifest.buildMetadata, null, 2), "json"),

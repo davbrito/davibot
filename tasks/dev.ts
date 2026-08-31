@@ -11,7 +11,6 @@ import { formatCode } from "./utils.ts";
 
 const dotenv = env(
   {
-    AUTHOR: z.string(),
     RESTRICTIONS: z.string().optional(),
   },
   {
@@ -50,7 +49,6 @@ async function createConfigsManifest(): Promise<string> {
   }
 
   const buildMetadata = {
-    author: dotenv.AUTHOR,
     version: denoJson.version ?? "unknown",
     timestamp: new Date().toISOString(),
   };
@@ -59,9 +57,8 @@ async function createConfigsManifest(): Promise<string> {
     import type { ManifestSchema, Restrictions } from "./src/manifest.ts";
 
     const restrictions: Restrictions | undefined = ${await getRestrictions()};
-    
+
     const manifest = {
-        author: ${JSON.stringify(dotenv.AUTHOR)},
         commands: {
             ${commandEntries.join(",\n")}
         },
