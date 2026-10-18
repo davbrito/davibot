@@ -7,8 +7,8 @@
 ## Contexto
 
 `main` corre en Deno: Deno Deploy, Deno KV y `Deno.cron`. La rama `cloudflare-worker` explora un
-entrypoint para Cloudflare Workers/Vercel con su propio tooling (pnpm, Wrangler, unstorage y
-cheerio).
+entrypoint para Cloudflare Workers con su propio tooling (pnpm, Wrangler, unstorage y cheerio). Una
+iteración anterior también apuntaba a Vercel; ese soporte se descartó después.
 
 La adopción de Cloudflare en `main` **no se completó**: el scraping de `dle.rae.es` falla porque la
 web de la RAE bloquea las peticiones. El sitio está detrás de un Cloudflare Managed Challenge y
@@ -19,7 +19,7 @@ fiable desde Workers. Sin acceso al diccionario, el bot no puede operar.
 ## Decisión
 
 - `main` (Deno) es la rama canónica y el entorno de producción.
-- No se mergea el runtime de Workers/Vercel ni su tooling de build en `main`. Las librerías
+- No se mergea el runtime de Workers ni su tooling de build en `main`. Las librerías
   platform-neutral (por ejemplo, unstorage) sí se pueden adoptar en Deno.
 - Las mejoras de comportamiento del branch se portan manualmente a Deno.
 - La estrategia de paridad a largo plazo (rebase o `PARITY.md`) queda pospuesta por ahora.
