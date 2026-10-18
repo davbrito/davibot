@@ -67,27 +67,6 @@ export const setupCommands: SetupFunction = async (composer, bot) => {
 
   bot.errorBoundary(errorBoundary).use(composer);
 
-  // retry(
-  //   () =>
-  //     bot.api.setMyCommands(
-  //       commandConfigs
-  //         .filter((command) => command.command)
-  //         .map((command) => ({
-  //           command: command.command,
-  //           description: command.description || "",
-  //         })),
-  //     ),
-  //   {
-  //     maxAttempts: 3,
-  //   },
-  // )
-  //   .then(() => {
-  //     console.log("Commands set up successfully");
-  //   })
-  //   .catch((err) => {
-  //     console.error("Error setting up commands:", err);
-  //   });
-
   async function loadCommandConfigs(): Promise<CommandConfig[]> {
     const commands: CommandConfig[] = [];
 
