@@ -17,3 +17,5 @@ apis.gen/
 .data/
 
 kview/
+.cloudflare/
+.wrangler/
