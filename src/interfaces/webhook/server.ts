@@ -9,8 +9,10 @@ import { type Bot, webhookCallback } from "grammy";
 import { Hono } from "hono";
 import z from "zod";
 
+import { DEBUG } from "../../config.ts";
 import type { AppContextType } from "../../context.ts";
 import { logStart, measureDuration, waitUntil } from "../../utils.ts";
+import { renderDictPreview } from "./dict-preview.tsx";
 
 interface HttpServerContext {
   BOT_SECRET: string;
@@ -76,6 +78,15 @@ export async function serveWebhook(
     }
     return response;
   });
+
+  if (DEBUG) {
+    app.get("/dict", async (c) => {
+      const { status, html } = await renderDictPreview(c.req.query("word"));
+      c.status(status);
+      return c.html(html);
+    });
+  }
+
   app.notFound((c) => c.json({ error: "Not found" }, 404));
   app.onError((err, c) => {
     console.error("Internal server error", err);

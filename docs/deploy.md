@@ -16,6 +16,11 @@ deno task webhook -- -u https://davibot.davbrito.deno.net/ -s "$BOT_SECRET" set
 deno task webhook -- get
 ```
 
+## Dictionary preview
+
+With `DEBUG=true`, `GET /dict?word=casa` renders the RAE definition outside Telegram. The route is
+disabled otherwise.
+
 ## Local checks
 
 ```sh
