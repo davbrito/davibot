@@ -31,7 +31,7 @@ export class RaeRepository {
   public static readonly PREFIX = "rae-cache";
 
   #list(word?: string) {
-    return this.db.kv.list<Uint8Array<ArrayBuffer>>({
+    return this.db.rawKv.list<Uint8Array<ArrayBuffer>>({
       prefix: word ? [RaeRepository.PREFIX, word] : [RaeRepository.PREFIX],
     });
   }
@@ -62,7 +62,7 @@ export class RaeRepository {
 
   async #setCache(word: string, value: ReadableStream<Uint8Array>) {
     try {
-      const kv = this.db.kv;
+      const kv = this.db.rawKv;
 
       const op = kv.atomic();
       await this.#delete(op, word);
@@ -155,7 +155,7 @@ export class RaeRepository {
   }
 
   async clearCache() {
-    const kv = this.db.kv;
+    const kv = this.db.rawKv;
     const op = kv.atomic();
     await this.#delete(op);
     await op.commit();

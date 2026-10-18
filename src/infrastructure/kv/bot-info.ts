@@ -6,11 +6,10 @@ export class BotInfoRepository {
   constructor(public readonly db: DbContext) {}
 
   async get() {
-    const botInfo = await this.db.kv.get<UserFromGetMe>(["bot-info"]);
-    return botInfo.value;
+    return (await this.db.kv.getItem<UserFromGetMe>("bot-info")) ?? undefined;
   }
 
   async set(value: UserFromGetMe) {
-    await this.db.kv.set(["bot-info"], value);
+    await this.db.kv.setItem("bot-info", value);
   }
 }

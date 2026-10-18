@@ -21,7 +21,7 @@
       "dom.iterable",
       "deno.ns",
       "deno.unstable",
-      "esnext"    
+      "esnext"
     ],
     "jsx": "react-jsx",
     "jsxImportSource": "react",
@@ -40,7 +40,9 @@
     "minify": "deno run -A npm:terser --module --source-map -o ./dist/main.min.js ./dist/main.js",
     "bundle": "deno task manifest && deno run  --allow-env --allow-read --allow-write --allow-net --allow-run --allow-import ./tasks/bundle.ts",
     "deploy": "deno task bundle && deno run -A ./tasks/deploy.ts",
-    "generate-secret": "deno run tasks/generate_secret.ts"
+    "generate-secret": "deno run tasks/generate_secret.ts",
+    "test": "deno test --allow-env --allow-read --allow-import src",
+    "migrate-kv": "deno run --allow-env --allow-read --allow-net --allow-import ./tasks/migrate-kv.ts"
   },
   "bench": {
     "files": {
@@ -81,6 +83,8 @@
     "react-dom": "npm:react-dom@^19.2.8",
     "telegraf-middleware-console-time": "npm:telegraf-middleware-console-time@^3.0.0",
     "typescript": "npm:typescript@^6.0.3",
+    "unstorage": "npm:unstorage@1.17.6",
+    "unstorage/drivers/deno-kv": "npm:unstorage@1.17.6/drivers/deno-kv",
     "zod": "npm:zod@^4.5.4"
   },
   "deploy": {

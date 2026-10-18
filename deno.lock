@@ -23,6 +23,7 @@
     "npm:react@^19.2.8": "19.2.8",
     "npm:telegraf-middleware-console-time@3": "3.0.0",
     "npm:typescript@^6.0.3": "6.0.3",
+    "npm:unstorage@1.17.6": "1.17.6",
     "npm:zod@^4.5.4": "4.5.4"
   },
   "jsr": {
@@ -338,6 +339,13 @@
     "ansi-colors@4.1.3": {
       "integrity": "sha512-/6w/C21Pm1A7aZitlI5Ni/2J6FFQN8i1Cvz3kHABAAbw93v/NlvKdVOqz7CCWz/3iv/JplRSEEZ83XION15ovw=="
     },
+    "anymatch@3.1.3": {
+      "integrity": "sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==",
+      "dependencies": [
+        "normalize-path",
+        "picomatch"
+      ]
+    },
     "argparse@2.0.1": {
       "integrity": "sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q=="
     },
@@ -392,12 +400,21 @@
     "content-type@3.0.0": {
       "integrity": "sha512-AIi5H6p0xk5uknXcN3/rmhP8jgp69OfSe/JuKiQAFprJ7UGw7mwj7m4XcmDzlrnJDG+cGpphAINGdU3g3g7kDw=="
     },
+    "cookie-es@1.2.3": {
+      "integrity": "sha512-lXVyvUvrNXblMqzIRrxHb57UUVmqsSWlxqt3XIjCkUP0wDAf6uicO6KMbEgYrMNtEvWgWHwe42CKxPu9MYAnWw=="
+    },
     "cross-spawn@7.0.6": {
       "integrity": "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==",
       "dependencies": [
         "path-key",
         "shebang-command",
         "which"
+      ]
+    },
+    "crossws@0.3.5": {
+      "integrity": "sha512-ojKiDvcmByhwa8YYqbQI/hg7MEU0NC03+pSdEq4ZUnZR9xXpwk7E43SMNGkn+JxJGPFtNvQ48+vV2p+P1ml5PA==",
+      "dependencies": [
+        "uncrypto"
       ]
     },
     "csstype@3.2.3": {
@@ -453,6 +470,20 @@
       "integrity": "sha512-r+mvuDjrjMpsdw46Kmeydb8bdHm7wOKw8wNBtTndkjbPjgAp5oUJUxRE76wZFknxIPokfWvep2qSXK37aXE6zg==",
       "bin": true
     },
+    "h3@1.15.11": {
+      "integrity": "sha512-L3THSe2MPeBwgIZVSH5zLdBBU90TOxarvhK9d04IDY2AmVS8j2Jz2LIWtwsGOU3lu2I5jCN7FNvVfY2+XyF+mg==",
+      "dependencies": [
+        "cookie-es",
+        "crossws",
+        "defu",
+        "destr",
+        "iron-webcrypto",
+        "node-mock-http",
+        "radix3",
+        "ufo",
+        "uncrypto"
+      ]
+    },
     "hono@4.13.5": {
       "integrity": "sha512-O6+/eCYRkzzzy0rPWwKLiGBR1nFuUPZynnwjxN1MBA62NNqbT0wQEzQyK2gSO5yDIDB336sXQleAhOHrzlYyKw=="
     },
@@ -461,6 +492,9 @@
       "dependencies": [
         "safer-buffer"
       ]
+    },
+    "iron-webcrypto@1.2.1": {
+      "integrity": "sha512-feOM6FaSr6rEABp/eDfVseKyTMDt+KGpeB35SkVn9Tyn0CqvVsY3EwI0v5i8nMHyJnzCIQf7nsy3p41TPkJZhg=="
     },
     "is-docker@3.0.0": {
       "integrity": "sha512-eljcgEDlEns/7AXFosB5K/2nCM4P7FQPkGc/DWLy5rmFEWvZayGrik1d9/QIY5nJ4f9YsVvBkA6kJpHn9rISdQ==",
@@ -502,8 +536,28 @@
     "json-with-bigint@3.5.12": {
       "integrity": "sha512-uwbF/wSSuOgC7qqlq27Xp5B6a2MHVug3t0idZdTqu0JnlFvgJuH7ju+KAk/J06C7GfhoYy2gnb9wz2INqcne7w=="
     },
+    "lru-cache@11.5.3": {
+      "integrity": "sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg=="
+    },
     "mute-stream@3.0.0": {
       "integrity": "sha512-dkEJPVvun4FryqBmZ5KhDo0K9iDXAwn08tMLDinNdRBNPcYEDiWYysLcc6k3mjTMlbP9KyylvRpd4wFtwrT9rw=="
+    },
+    "node-fetch-native@1.6.7": {
+      "integrity": "sha512-g9yhqoedzIUm0nTnTqAQvueMPVOuIY16bqgAJJC8XOOubYFNwz6IER9qs0Gq2Xd0+CecCKFjtdDTMA4u4xG06Q=="
+    },
+    "node-mock-http@1.0.5": {
+      "integrity": "sha512-KQyt/wLjG3TAc7DOUhpqWzgd4ERxR80JOlTK5VE5R1S12IaPVN5qkj4klBce9HPG1Njuup4Sb5bljaT34lIyjw=="
+    },
+    "normalize-path@3.0.0": {
+      "integrity": "sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA=="
+    },
+    "ofetch@1.5.1": {
+      "integrity": "sha512-2W4oUZlVaqAPAil6FUg/difl6YhqhUR7x2eZY4bQCko22UXg3hptq9KLQdqFClV+Wu85UX7hNtdGTngi/1BxcA==",
+      "dependencies": [
+        "destr",
+        "node-fetch-native",
+        "ufo"
+      ]
     },
     "ohash@2.0.12": {
       "integrity": "sha512-65S/5gk9YSsaRjcyf7Nfa6h/d3E8/1gslpXfI4W7Dxn/oap8IKRuNT5VXkLQ1YFKIEg4apRY4Pj6aiwFzrDdmw=="
@@ -528,6 +582,9 @@
     "perfect-debounce@2.1.0": {
       "integrity": "sha512-LjgdTytVFXeUgtHZr9WYViYSM/g8MkcTPYDlPa3cDqMirHjKiSZPYd6DoL7pK8AJQr+uWkQvCjHNdiMqsrJs+g=="
     },
+    "picomatch@2.3.2": {
+      "integrity": "sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA=="
+    },
     "pkg-types@2.3.1": {
       "integrity": "sha512-y+ichcgc2LrADuhLNAx8DFjVfgz91pRxfZdI3UDhxHvcVEZsenLO+7XaU5vOp0u/7V/wZ+plyuQxtrDlZJ+yeg==",
       "dependencies": [
@@ -538,6 +595,9 @@
     },
     "powershell-utils@0.1.0": {
       "integrity": "sha512-dM0jVuXJPsDN6DvRpea484tCUaMiXWjuCn++HGTqUWzGDjv5tZkEZldAJ/UMlqRYGFrD/etByo4/xOuC/snX2A=="
+    },
+    "radix3@1.1.2": {
+      "integrity": "sha512-b484I/7b8rDEdSDKckSSBA8knMpcdsXudlE/LNL639wFoHKwLbEkQFZHWEYwDC0wa0FKUcCY+GAF73Z7wxNVFA=="
     },
     "rc9@3.0.1": {
       "integrity": "sha512-gMDyleLWVE+i6Sgtc0QbbY6pEKqYs97NGi6isHQPqYlLemPoO8dxQ3uGi0f4NiP98c+jMW6cG1Kx9dDwfvqARQ==",
@@ -594,8 +654,27 @@
       "integrity": "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==",
       "bin": true
     },
+    "ufo@1.6.4": {
+      "integrity": "sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA=="
+    },
+    "uncrypto@0.1.3": {
+      "integrity": "sha512-Ql87qFHB3s/De2ClA9e0gsnS6zXG27SkTiSJwjCc9MebbfapQfuPzumMIUMi38ezPZVNFcHI9sUIepeQfw8J8Q=="
+    },
     "universal-user-agent@7.0.3": {
       "integrity": "sha512-TmnEAEAsBJVZM/AADELsK76llnwcf9vMKuPz8JflO1frO8Lchitr0fNaN9d+Ap0BjKtqWqd/J17qeDnXh8CL2A=="
+    },
+    "unstorage@1.17.6": {
+      "integrity": "sha512-gjKtcmn/KwZuJZO9o2sc0esAQnhmTw0LviDHwevTXbJMYs0dRTp8ZEEWXHU0vTpzbN3cA0yxlTeyXssMp3zDqw==",
+      "dependencies": [
+        "anymatch",
+        "chokidar",
+        "destr",
+        "h3",
+        "lru-cache",
+        "node-fetch-native",
+        "ofetch",
+        "ufo"
+      ]
     },
     "which@2.0.2": {
       "integrity": "sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==",
@@ -697,6 +776,7 @@
       "npm:react@^19.2.8",
       "npm:telegraf-middleware-console-time@3",
       "npm:typescript@^6.0.3",
+      "npm:unstorage@1.17.6",
       "npm:zod@^4.5.4"
     ]
   }
