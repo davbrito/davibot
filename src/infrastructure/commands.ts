@@ -40,7 +40,7 @@ export const setupCommands: SetupFunction = async (composer, bot) => {
   composer.command("about", (ctx) => ctx.reply("Author: @" + AUTHOR));
 
   composer.command("buildinfo", (ctx, next) => {
-    if (ctx.from?.username === AUTHOR) {
+    if (ctx.isOwner) {
       ctx.reply(
         "Build info:\n" +
           codeBlock(JSON.stringify(manifest.buildMetadata, null, 2), "json"),
@@ -54,6 +54,13 @@ export const setupCommands: SetupFunction = async (composer, bot) => {
   composer.command("end", async (ctx) => {
     await ctx.sessionManager.clean();
     await ctx.reply("Bye");
+  });
+
+  composer.command("updatecommands", async (ctx, next) => {
+    if (!ctx.isOwner) return next();
+
+    await updateCommands(bot);
+    await ctx.reply("Commands updated");
   });
 
   miscellaneousCommands(composer);
@@ -111,6 +118,15 @@ export function getCommandConfigs() {
   return commandConfigs;
 }
 
+function updateCommands(bot: Bot<AppContextType>) {
+  return bot.api.setMyCommands(
+    commandConfigs.map((command) => ({
+      command: command.name,
+      description: command.description || "",
+    })),
+  );
+}
+
 function miscellaneousCommands(composer: AppComposer) {
   composer.on("message:text").hears(/xd|(js)+|(ha(ha)+)/i, async (ctx) => {
     await ctx.reply("xD", { reply_to_message_id: ctx.message.message_id });
@@ -155,6 +171,5 @@ function miscellaneousCommands(composer: AppComposer) {
   composer.on("edited_message", (ctx) =>
     ctx.reply("Ajá! Uldepasao! Editaste eto!", {
       reply_to_message_id: ctx.msg.message_id,
-    }),
-  );
+    }));
 }

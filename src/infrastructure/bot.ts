@@ -3,7 +3,7 @@ import { react } from "$interfaces/middlewares/react.middleware.tsx";
 import { autoRetry } from "@grammyjs/auto-retry";
 import { hydrate } from "@grammyjs/hydrate/plugin.ts";
 import type { UserFromGetMe } from "@grammyjs/types";
-import { Bot } from "grammy";
+import { Api, Bot } from "grammy";
 import { generateUpdateMiddleware } from "telegraf-middleware-console-time";
 
 import { AUTHOR, BOT_TOKEN, runAsWebhook } from "../config.ts";
@@ -12,6 +12,10 @@ import { SessionManager } from "../session/sessions.ts";
 import { withDb } from "./kv/middleware.ts";
 
 let bot: Bot<AppContextType>;
+
+export function getApi() {
+  return new Api(BOT_TOKEN);
+}
 
 export function getBot(initialBotInfo?: UserFromGetMe) {
   if (bot) return bot;
@@ -22,10 +26,7 @@ export function getBot(initialBotInfo?: UserFromGetMe) {
   bot.api.config.use(autoRetry());
 
   if (!runAsWebhook) {
-    bot.use(generateUpdateMiddleware(), (ctx, next) => {
-      console.log(`Received update: ${ctx.update.update_id}, type:`, ctx);
-      return next();
-    });
+    bot.use(generateUpdateMiddleware());
   }
 
   bot.use(

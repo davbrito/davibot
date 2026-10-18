@@ -2,6 +2,7 @@ import "$interfaces/jobs/controllers.ts";
 
 import { getBot } from "$infrastructure/bot.ts";
 import { setupCommands } from "$infrastructure/commands.ts";
+import { notifyAdmin } from "$infrastructure/helpers/notify-admin.ts";
 import { DbContext } from "$infrastructure/kv/dbcontext.ts";
 import { serveWebhook } from "$interfaces/webhook/server.ts";
 import type { Api, Bot, RawApi } from "grammy";
@@ -9,7 +10,7 @@ import { Composer } from "grammy";
 
 import { BOT_SECRET, runAsWebhook } from "./config.ts";
 import type { AppContextType } from "./context.ts";
-import { logStart } from "./utils.ts";
+import { logStart, waitUntil } from "./utils.ts";
 
 async function main() {
   console.log("Starting bot...");
@@ -24,6 +25,7 @@ async function main() {
       'Error caught in "bot.catch":',
       String(error) + "\n" + error.stack,
     );
+    waitUntil(notifyAdmin(error.ctx.api, "bot.catch", error));
   });
 
   if (runAsWebhook) {

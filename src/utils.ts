@@ -13,6 +13,28 @@ export async function logStart(bot: Bot<AppContextType>, addr?: Deno.NetAddr) {
   );
 }
 
+interface EdgeRuntimeLike {
+  waitUntil(promise: Promise<unknown>): void;
+}
+
+/**
+ * Keep background work alive after the response is sent when running on
+ * Deno Deploy. Locally there is no `EdgeRuntime`, so we just observe the
+ * promise to avoid an unhandled rejection.
+ */
+export function waitUntil(promise: Promise<unknown>) {
+  const runtime = (globalThis as { EdgeRuntime?: EdgeRuntimeLike }).EdgeRuntime;
+
+  if (runtime?.waitUntil) {
+    runtime.waitUntil(promise);
+    return;
+  }
+
+  void promise.catch((error) => {
+    console.error("Background task failed:", error);
+  });
+}
+
 const numeberFormat = new Intl.NumberFormat([], {
   style: "decimal",
   minimumFractionDigits: 0,

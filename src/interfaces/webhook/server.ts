@@ -10,7 +10,7 @@ import { Hono } from "hono";
 import z from "zod";
 
 import type { AppContextType } from "../../context.ts";
-import { logStart, measureDuration } from "../../utils.ts";
+import { logStart, measureDuration, waitUntil } from "../../utils.ts";
 
 interface HttpServerContext {
   BOT_SECRET: string;
@@ -79,7 +79,7 @@ export async function serveWebhook(
   app.notFound((c) => c.json({ error: "Not found" }, 404));
   app.onError((err, c) => {
     console.error("Internal server error", err);
-    notifyAdmin(bot.api, "HTTP server", err).catch(() => {});
+    waitUntil(notifyAdmin(bot.api, "HTTP server", err));
     return c.text("Internal Server Error", 500);
   });
 
