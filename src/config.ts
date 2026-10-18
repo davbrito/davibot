@@ -13,7 +13,7 @@ export const {
   z.object({
     AUTHOR: z.string({ error: "AUTHOR is required" }).nonempty(),
     BOT_TOKEN: z.string({ error: "BOT_TOKEN is required" }).nonempty(),
-    BOT_SECRET: z.string({ error: "BOT_SECRET is required" }).nonempty(),
+    BOT_SECRET: z.string().optional(),
     DENO_DEPLOYMENT_ID: z.unknown().optional(),
     WEBHOOK_MODE: z.stringbool().default(false),
 

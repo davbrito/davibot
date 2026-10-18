@@ -29,6 +29,10 @@ async function main() {
   });
 
   if (runAsWebhook) {
+    if (!BOT_SECRET) {
+      console.error("BOT_SECRET is required in webhook mode");
+      Deno.exit(1);
+    }
     await serveWebhook(bot, BOT_SECRET);
   } else {
     await serveLongPolling(bot);
