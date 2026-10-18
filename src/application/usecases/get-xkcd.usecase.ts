@@ -13,13 +13,13 @@ export async function getXkcdUsecase(options: GetXkcdOptions) {
   if (res.error || !res.data) {
     const { response, error } = res;
     throw new Error(
-      `Failed to retrieve XKCD comic: ${
-        String(error)
-      }\nResponse: ${response?.status} ${response?.statusText}`,
+      `Failed to retrieve XKCD comic: ${String(
+        error,
+      )}\nResponse: ${response?.status} ${response?.statusText}`,
     );
   }
 
-  return (res.data);
+  return res.data;
 }
 
 async function retrieveComic(text: string, repository: XkcdRepository) {

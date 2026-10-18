@@ -1,4 +1,5 @@
 import type { CommandConfig } from "$infrastructure/commands.ts";
+
 import codeCommandHandler from "../handlers/code.handler.tsx";
 
 export const config: CommandConfig = {

@@ -150,5 +150,6 @@ function miscellaneousCommands(composer: AppComposer) {
   composer.on("edited_message", (ctx) =>
     ctx.reply("Ajá! Uldepasao! Editaste eto!", {
       reply_to_message_id: ctx.msg.message_id,
-    }));
+    }),
+  );
 }

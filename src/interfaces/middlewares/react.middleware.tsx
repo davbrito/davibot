@@ -6,13 +6,15 @@ import { renderToStaticMarkup } from "react-dom/server";
 type ReplyWithReact = Context["reply"] extends (
   text: string,
   ...args: infer A
-) => infer R ? (node: ReactNode, ...args: A) => R
+) => infer R
+  ? (node: ReactNode, ...args: A) => R
   : never;
 
 type EditMessageTextWithReact = MessageXFragment["editText"] extends (
   text: string,
   ...args: infer A
-) => infer R ? (message: MessageXFragment, node: ReactNode, ...args: A) => R
+) => infer R
+  ? (message: MessageXFragment, node: ReactNode, ...args: A) => R
   : never;
 
 export type ReactFlavor<C extends Context> = C & {

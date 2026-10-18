@@ -29,7 +29,8 @@ function errorDetails(error: unknown): Record<string, unknown> {
 
   if (!(error instanceof Error)) return { message: String(error) };
 
-  const { error_code, description, parameters } = error as Partial<GrammyErrorLike>;
+  const { error_code, description, parameters } =
+    error as Partial<GrammyErrorLike>;
 
   return {
     name: error.name,
@@ -68,9 +69,10 @@ export async function notifyAdmin(
 
     if (!ids || ids.length === 0) return;
 
-    const errorMessage = error instanceof Error
-      ? `${error.message}\n\n${error.stack ?? ""}`
-      : String(error);
+    const errorMessage =
+      error instanceof Error
+        ? `${error.message}\n\n${error.stack ?? ""}`
+        : String(error);
 
     const version = manifest.buildMetadata?.version ?? "?";
     const header = `⚠️ *Bot Failure — ${context}*`;

@@ -49,7 +49,9 @@ function UpstreamErrorMessage({
 }): ReactNode {
   return (
     <>
-      {"No he podido consultar la RAE ahora mismo. Vuelve a intentarlo en unos minutos."}
+      {
+        "No he podido consultar la RAE ahora mismo. Vuelve a intentarlo en unos minutos."
+      }
       {DEBUG ? <pre>{error.message}</pre> : null}
     </>
   );

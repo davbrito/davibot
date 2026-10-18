@@ -1,4 +1,5 @@
 import type { CommandConfig } from "$infrastructure/commands.ts";
+
 import { qrCommandHandler } from "../handlers/qr.handler.ts";
 
 export const config: CommandConfig = {

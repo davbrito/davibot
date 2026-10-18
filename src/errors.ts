@@ -24,8 +24,8 @@ export class UpstreamUnavailableError extends Error {
   ) {
     const reason = info.status
       ? ` (${info.status}${info.statusText ? ` ${info.statusText}` : ""}${
-        info.challenge ? ", bot challenge" : ""
-      })`
+          info.challenge ? ", bot challenge" : ""
+        })`
       : "";
 
     super(`${service} is unavailable${reason}`, { cause: info.cause });

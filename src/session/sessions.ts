@@ -14,10 +14,8 @@ const sessionDataSchema = z.looseObject({
 
 export type SessionData = z.infer<typeof sessionDataSchema>;
 
-export type SessionManagerFlavor<C extends Context> =
-  & C
-  & LazySessionFlavor<SessionData>
-  & {
+export type SessionManagerFlavor<C extends Context> = C &
+  LazySessionFlavor<SessionData> & {
     sessionManager: SessionManager;
   };
 
