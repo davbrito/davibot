@@ -4,7 +4,6 @@ import manifest from "$manifest";
 import { sample } from "@std/random";
 import type { Bot, CommandMiddleware, Composer } from "grammy";
 
-import { AUTHOR } from "../config.ts";
 import type { AppContextType } from "../context.ts";
 
 type MaybePromise<T> = T | Promise<T>;
@@ -24,7 +23,11 @@ export interface CommandConfig {
 
 let commandConfigs: CommandConfig[] = [];
 
-export const setupCommands: SetupFunction = async (composer, bot) => {
+export const setupCommands = async (
+  composer: AppComposer,
+  bot: Bot<AppContextType>,
+  author: string,
+) => {
   commandConfigs = [
     {
       name: "about",
@@ -37,7 +40,7 @@ export const setupCommands: SetupFunction = async (composer, bot) => {
     ...(await loadCommandConfigs()),
   ];
 
-  composer.command("about", (ctx) => ctx.reply("Author: @" + AUTHOR));
+  composer.command("about", (ctx) => ctx.reply("Author: @" + author));
 
   composer.command("buildinfo", (ctx, next) => {
     if (ctx.isOwner) {

@@ -6,18 +6,23 @@ import type { UserFromGetMe } from "@grammyjs/types";
 import { Api, Bot } from "grammy";
 import { generateUpdateMiddleware } from "telegraf-middleware-console-time";
 
-import { AUTHOR, BOT_TOKEN, runAsWebhook } from "../config.ts";
+import { BOT_TOKEN, runAsWebhook } from "../config.ts";
 import type { AppContextType } from "../context.ts";
 import { SessionManager } from "../session/sessions.ts";
 import { withDb } from "./kv/middleware.ts";
 
 let bot: Bot<AppContextType>;
+// The owner is supplied by each entrypoint (Deno config, Workers binding,
+// etc.) so the bot wiring stays runtime-independent.
+let botAuthor: string | undefined;
 
 export function getApi() {
   return new Api(BOT_TOKEN);
 }
 
-export function getBot(initialBotInfo?: UserFromGetMe) {
+export function getBot(initialBotInfo?: UserFromGetMe, author?: string) {
+  if (author !== undefined) botAuthor = author;
+
   if (bot) return bot;
   bot = new Bot<AppContextType>(BOT_TOKEN, {
     botInfo: initialBotInfo ?? undefined,
@@ -36,7 +41,7 @@ export function getBot(initialBotInfo?: UserFromGetMe) {
     react(),
     SessionManager.middleware(),
     async (ctx, next) => {
-      ctx.isOwner = ctx.from?.username === AUTHOR;
+      ctx.isOwner = ctx.from?.username === botAuthor;
       if (ctx.isOwner && ctx.from?.id) {
         await ctx.db.adminNotifier.register(ctx.from.id);
       }

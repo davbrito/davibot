@@ -8,7 +8,7 @@ import { serveWebhook } from "$interfaces/webhook/server.ts";
 import type { Api, Bot, RawApi } from "grammy";
 import { Composer } from "grammy";
 
-import { BOT_SECRET, runAsWebhook } from "./config.ts";
+import { AUTHOR, BOT_SECRET, runAsWebhook } from "./config.ts";
 import type { AppContextType } from "./context.ts";
 import { logStart, waitUntil } from "./utils.ts";
 
@@ -16,9 +16,9 @@ async function main() {
   console.log("Starting bot...");
 
   const initialBotInfo = await DbContext.use((db) => db.botInfo.get());
-  const bot = getBot(initialBotInfo ?? undefined);
+  const bot = getBot(initialBotInfo ?? undefined, AUTHOR);
 
-  await setupCommands(new Composer(), bot);
+  await setupCommands(new Composer(), bot, AUTHOR);
 
   bot.catch((error) => {
     console.error(
