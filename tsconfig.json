@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "lib": ["ESNext"],
+    "jsx": "react-jsx",
+    "types": ["./worker-configuration.d.ts", "node"],
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true,
+    "paths": {
+      "$apis/*": ["./apis.gen/*"],
+      "$manifest": ["./manifest.gen.ts"],
+      "$interfaces/*": ["./src/interfaces/*"],
+      "$infrastructure/*": ["./src/infrastructure/*"],
+      "$application/*": ["./src/application/*"]
+    }
+  }
+}

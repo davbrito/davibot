@@ -1,9 +1,9 @@
 import { withApis } from "$interfaces/middlewares/api.middleware.ts";
 import { react } from "$interfaces/middlewares/react.middleware.tsx";
 import { autoRetry } from "@grammyjs/auto-retry";
-import { hydrate } from "@grammyjs/hydrate/plugin.ts";
-import type { UserFromGetMe } from "@grammyjs/types";
+import { hydrate } from "@grammyjs/hydrate";
 import { Api, Bot } from "grammy";
+import type { UserFromGetMe } from "grammy/types";
 import { generateUpdateMiddleware } from "telegraf-middleware-console-time";
 
 import { BOT_TOKEN, runAsWebhook } from "../config.ts";

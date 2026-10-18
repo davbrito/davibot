@@ -1,4 +1,4 @@
-import type { UserFromGetMe } from "@grammyjs/types";
+import type { UserFromGetMe } from "grammy/types";
 
 import type { DbContext } from "./dbcontext.ts";
 

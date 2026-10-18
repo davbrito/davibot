@@ -1,4 +1,4 @@
-import type { MessageXFragment } from "@grammyjs/hydrate/data/message.ts";
+import type { MessageXFragment } from "@grammyjs/hydrate/out/data/message.js";
 import type { Context, MiddlewareFn } from "grammy";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";

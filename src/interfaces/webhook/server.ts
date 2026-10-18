@@ -1,32 +1,26 @@
 import type { IAuthService } from "$application/services/auth.service.ts";
 import { clearCacheUseCase } from "$application/usecases/clear-cache.usecase.ts";
 import { AuthServiceAdapter } from "$infrastructure/adapters/auth.adapter.ts";
+import type { HonoEnv } from "$infrastructure/app.ts";
 import { notifyAdmin } from "$infrastructure/helpers/notify-admin.ts";
-import { DbContext } from "$infrastructure/kv/dbcontext.ts";
+import type { DbContext } from "$infrastructure/kv/dbcontext.ts";
 import { green } from "@std/fmt/colors";
-import type { Api, RawApi } from "grammy";
-import { type Bot, webhookCallback } from "grammy";
-import { Hono } from "hono";
+import type { Api } from "grammy";
+import { type RawApi, webhookCallback } from "grammy";
+import type { Hono } from "hono";
 import z from "zod";
 
-import { DEBUG } from "../../config.ts";
-import type { AppContextType } from "../../context.ts";
-import { logStart, measureDuration, waitUntil } from "../../utils.ts";
-import { renderDictPreview } from "./dict-preview.tsx";
-
 interface HttpServerContext {
-  BOT_SECRET: string;
   auth: IAuthService;
   api: Api<RawApi>;
-  info: Deno.ServeHandlerInfo<Deno.NetAddr>;
+  db: DbContext;
 }
 
-async function handleCacheFlush(req: Request, ctx: HttpServerContext) {
-  const { secret } = await req.json();
+async function handleCacheFlush(secret: string, ctx: HttpServerContext) {
   if (!ctx.auth.verify(secret)) {
     return Response.json({ error: "Invalid secret" }, { status: 403 });
   }
-  await DbContext.use(clearCacheUseCase);
+  await clearCacheUseCase(ctx.db);
   return Response.json({ ok: true });
 }
 
@@ -47,70 +41,53 @@ async function handleSetWebhook(req: Request, ctx: HttpServerContext) {
   }
 }
 
-export async function serveWebhook(
-  bot: Bot<AppContextType>,
-  BOT_SECRET: string,
-  port?: number,
-) {
+/**
+ * Mount webhook and utility routes on the Hono application.
+ */
+export function serveWebhook(app: Hono<HonoEnv>, basePath = "") {
   console.log(green("Running on webhook mode"));
-  // Make sure botInfo is available before the first update arrives. `logStart`
-  // initializes it too, but `onListen` is not awaited by Deno.serve.
-  await bot.init();
 
-  const handleUpdate = webhookCallback(bot, "hono", {
-    secretToken: BOT_SECRET,
+  app.post(`${basePath}/cache/flush`, async (c) => {
+    const body = await c.req.json();
+    return handleCacheFlush(body.secret, {
+      auth: new AuthServiceAdapter(c.env.BOT_SECRET),
+      api: c.var.bot.api,
+      db: c.var.db,
+    });
   });
 
-  const auth = new AuthServiceAdapter(BOT_SECRET);
+  app.post(`${basePath}/webhook`, async (c) =>
+    handleSetWebhook(c.req.raw, {
+      auth: new AuthServiceAdapter(c.env.BOT_SECRET),
+      api: c.var.bot.api,
+      db: c.var.db,
+    }),
+  );
 
-  const app = new Hono<{
-    Bindings: HttpServerContext & { info: Deno.ServeHandlerInfo<Deno.NetAddr> };
-  }>();
-  app.use((c, next) => {
-    measureDuration(c.env.info.completed).catch(() => {});
-    return next();
-  });
-  app.post("/cache/flush", (c) => handleCacheFlush(c.req.raw, c.env));
-  app.post("/webhook", (c) => handleSetWebhook(c.req.raw, c.env));
-  app.post("/", async (c) => {
-    const response = await handleUpdate(c);
+  app.post(`${basePath}/telegram`, async (c) => {
+    const req = c.req.raw;
+
+    const response = await webhookCallback(c.var.bot, "std/http", {
+      secretToken: c.env.BOT_SECRET,
+    })(req);
 
     if (response.status === 401) {
-      console.error("Unauthorized request", c.req.raw);
+      console.error("Unauthorized request", req);
     } else if (response.status !== 200) {
-      console.error("Error handling update", c.req.raw, response);
+      console.error("Error handling update", req, response);
     }
     return response;
   });
 
-  if (DEBUG) {
-    app.get("/dict", async (c) => {
-      const { status, html } = await renderDictPreview(c.req.query("word"));
-      c.status(status);
-      return c.html(html);
-    });
-  }
-
   app.notFound((c) => c.json({ error: "Not found" }, 404));
+
   app.onError((err, c) => {
     console.error("Internal server error", err);
-    waitUntil(notifyAdmin(bot.api, "HTTP server", err));
+    c.env.waitUntil?.(
+      notifyAdmin(c.var.bot.api, "HTTP server", err).catch(() => {}),
+    );
     return c.text("Internal Server Error", 500);
   });
 
-  const server = Deno.serve({
-    handler: (req, info) =>
-      app.fetch(req, {
-        auth,
-        BOT_SECRET,
-        api: bot.api,
-        info,
-      }),
-    onListen(addr) {
-      logStart(bot, addr);
-    },
-    port,
-  });
-
-  await server.finished;
+  return app;
 }

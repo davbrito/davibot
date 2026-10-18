@@ -1,5 +1,4 @@
 import { codeBlock } from "$interfaces/helpers/markdown.ts";
-import { errorBoundary } from "$interfaces/middlewares/error-handler.middleware.tsx";
 import manifest from "$manifest";
 import { sample } from "@std/random";
 import type { Bot, CommandMiddleware, Composer } from "grammy";
@@ -12,7 +11,7 @@ export type SetupFunction = (
   bot: Bot<AppContextType>,
 ) => MaybePromise<void>;
 
-type AppComposer = Composer<AppContextType>;
+export type AppComposer = Composer<AppContextType>;
 
 export interface CommandConfig {
   name: string;
@@ -67,8 +66,6 @@ export const setupCommands = async (
   });
 
   miscellaneousCommands(composer);
-
-  bot.errorBoundary(errorBoundary).use(composer);
 
   async function loadCommandConfigs(): Promise<CommandConfig[]> {
     const commands: CommandConfig[] = [];
