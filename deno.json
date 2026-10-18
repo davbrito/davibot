@@ -42,7 +42,7 @@
     "deploy": "deno task bundle && deno run -A ./tasks/deploy.ts",
     "generate-secret": "deno run tasks/generate_secret.ts",
     "test": "deno test --allow-env --allow-read --allow-import src",
-    "migrate-kv": "deno run --allow-env --allow-read --allow-net --allow-import ./tasks/migrate-kv.ts"
+    "migrate-kv": "deno run --allow-env --allow-read --allow-write --allow-net --allow-import ./tasks/migrate-kv.ts"
   },
   "bench": {
     "files": {
