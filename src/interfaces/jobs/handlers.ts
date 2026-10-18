@@ -2,15 +2,14 @@ import { getXkcdUsecase } from "$application/usecases/get-xkcd.usecase.ts";
 import { getExternalApis } from "$infrastructure/adapters/api.adapter.ts";
 import { getApi, getBot } from "$infrastructure/bot.ts";
 import { notifyAdmin } from "$infrastructure/helpers/notify-admin.ts";
-import { DbContext } from "$infrastructure/kv/dbcontext.ts";
+import type { DbContext } from "$infrastructure/kv/dbcontext.ts";
 import { XkcdRepository } from "$infrastructure/repositories/xkcd.repository.ts";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createXkcdResponse } from "../helpers/xkcd-response.helper.tsx";
 
-export async function dailyXkcdJobHandler() {
+export async function dailyXkcdJobHandler(db: DbContext) {
   try {
     const apis = getExternalApis();
-    using db = await DbContext.connect();
     const xkcdRepository = new XkcdRepository(apis);
     const bot = getBot();
 
