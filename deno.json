@@ -35,11 +35,8 @@
     "webhook": "deno run -A ./tasks/post_webhook.ts",
     "dev": "deno task manifest && deno run --watch --allow-import --allow-env --allow-read --allow-write --allow-net src/main.tsx",
     "dev:inspect": "deno task manifest && deno run --inspect-wait --watch --allow-env --allow-read --allow-write --allow-net src/main.tsx",
-    "get-deploy-project": "deno run -A ./tasks/print_env.ts DENO_DEPLOY_PROJECT",
-    "get-deploy-token": "deno run -A ./tasks/print_env.ts DENO_DEPLOY_TOKEN",
     "minify": "deno run -A npm:terser --module --source-map -o ./dist/main.min.js ./dist/main.js",
     "bundle": "deno task manifest && deno run  --allow-env --allow-read --allow-write --allow-net --allow-run --allow-import ./tasks/bundle.ts",
-    "deploy": "deno task bundle && deno run -A ./tasks/deploy.ts",
     "generate-secret": "deno run tasks/generate_secret.ts",
     "test": "deno test --allow-env --allow-read --allow-import src",
     "migrate-kv": "deno run --allow-env --allow-read --allow-write --allow-net --allow-import ./tasks/migrate-kv.ts"
