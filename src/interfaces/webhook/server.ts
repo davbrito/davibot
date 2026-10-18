@@ -53,6 +53,10 @@ export async function serveWebhook(
   port?: number,
 ) {
   console.log(green("Running on webhook mode"));
+  // Make sure botInfo is available before the first update arrives. `logStart`
+  // initializes it too, but `onListen` is not awaited by Deno.serve.
+  await bot.init();
+
   const handleUpdate = webhookCallback(bot, "hono", {
     secretToken: BOT_SECRET,
   });
